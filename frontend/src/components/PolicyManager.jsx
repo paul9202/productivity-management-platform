@@ -1,25 +1,58 @@
 import React from 'react';
-import { Paper, Typography, TextField, Button, Grid } from '@mui/material';
+import { Form, Input, Button, Card, Typography, message } from 'antd';
+
+const { Title } = Typography;
 
 function PolicyManager() {
+    const [form] = Form.useForm();
+
+    const onFinish = (values) => {
+        console.log('Success:', values);
+        message.success('Policy updated successfully');
+    };
+
     return (
-        <Paper sx={{ p: 3 }}>
-            <Typography variant="h5" gutterBottom>Global Policy Management</Typography>
-            <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
-                    <TextField fullWidth label="Focus Threshold (Score)" defaultValue="50" />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                    <TextField fullWidth label="Idle Timeout (Seconds)" defaultValue="300" />
-                </Grid>
-                <Grid item xs={12}>
-                    <TextField fullWidth label="Allowed App Categories (CSV)" defaultValue="work,utility,education" />
-                </Grid>
-                <Grid item xs={12}>
-                    <Button variant="contained" color="primary">Save Policy</Button>
-                </Grid>
-            </Grid>
-        </Paper>
+        <Card title="Global Policy Management" bordered={false} style={{ maxWidth: 800 }}>
+            <Form
+                form={form}
+                layout="vertical"
+                onFinish={onFinish}
+                initialValues={{
+                    focusThreshold: 50,
+                    idleTimeout: 300,
+                    allowedApps: 'work,utility,education',
+                }}
+            >
+                <Form.Item
+                    label="Focus Threshold (Score)"
+                    name="focusThreshold"
+                    rules={[{ required: true, message: 'Please input threshold!' }]}
+                >
+                    <Input type="number" />
+                </Form.Item>
+
+                <Form.Item
+                    label="Idle Timeout (Seconds)"
+                    name="idleTimeout"
+                    rules={[{ required: true, message: 'Please input timeout!' }]}
+                >
+                    <Input type="number" />
+                </Form.Item>
+
+                <Form.Item
+                    label="Allowed App Categories (CSV)"
+                    name="allowedApps"
+                >
+                    <Input />
+                </Form.Item>
+
+                <Form.Item>
+                    <Button type="primary" htmlType="submit">
+                        Save Policy
+                    </Button>
+                </Form.Item>
+            </Form>
+        </Card>
     );
 }
 
