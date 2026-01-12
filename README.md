@@ -1,64 +1,47 @@
-# Productivity-X Management Platform
+# Enterprise Productivity Admin Portal
 
-Production-grade management platform for "Productivity-X".
+Clean, enterprise-grade Web Admin Portal for Employee Productivity Enhancement System.
+
+## Features
+- **Offline Demo Mode**: Zero backend dependency by default. Uses realistic mock data.
+- **Enterprise UI**: Clean layout, strict TypeScript, responsive design.
+- **Pages**: Dashboard, Employees, Departments, Alerts, Policies.
 
 ## Tech Stack
-- **Backend**: Java Spring Boot 3.2, Java 17
-- **Frontend**: React 18, Vite, Material UI
-- **Database**: PostgreSQL 15
-- **Migrations**: Flyway
+- React 18 + TypeScript
+- Vite
+- Recharts (Charts)
+- No external UI libraries (Custom CSS components)
 
-## Quick Start
+## Quick Start (Offline Mode)
 
-### Prerequisites
-- Docker & Docker Compose
-- Java 17+
-- Node.js 18+
+1. **Install Dependencies**
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-### 0. Clone Repository
-```bash
-git clone https://github.com/paul9202/productivity-management-platform.git
-cd productivity-management-platform
-```
+2. **Run Dev Server**
+   ```bash
+   npm run dev
+   ```
+   Access at `http://localhost:5173`.
+   *Note: Runs on `0.0.0.0` for external access (e.g. from VM host).*
 
-### 1. Start Infrastructure
-```bash
-docker-compose up -d
-```
-This starts PostgreSQL on port 5432.
+## Environment Variables
+- `VITE_API_MODE`: `mock` (default) or `http`.
+  - `mock`: Uses in-memory seed data with simulated latency.
+  - `http`: Calls real backend endpoints.
 
-### 2. Run Backend
-```bash
-cd backend
-mvn spring-boot:run
-```
-Server starts on `http://localhost:8080`.
-swagger-ui not enabled by default but API is accessible.
+## Future Integration
+To switch to real backend:
+1. Update `src/api/index.tsx` to implement `HttpApiClient` methods using fetch/axios.
+2. Set `VITE_API_MODE=http` in `.env`.
+3. Ensure Backend is running on port 8080.
 
-### 3. Run Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-Access the Admin UI at `http://localhost:5173`.
-
-### 4. Update from Remote
-If you need to pull the latest changes from the master/main branch:
-```bash
-# Ensure you are in the root directory (productivity-management-platform)
-git pull origin main
-```
-*Note: If you see "fatal: not a git repository", ensure you ran `git clone` and are inside the correct folder (`cd productivity-management-platform`)*.
-
-## Architecture
-See `implementation_plan.md` for details.
-
-### Security
-- **mTLS**: In production, the Ingress/LB terminates TLS and forwards the client certificate.
-- **Dev Mode**: The backend accepts `X-Device-Id` header to simulate authenticated devices.
-
-### API Endpoints
-- `POST /api/telemetry/focus/batch`: Ingest telemetry.
-- `GET /api/policy/agent`: Fetch agent policy.
-- `GET /api/reports/daily`: Fetch daily aggregates.
+## Project Structure
+- `src/api`: ApiClient interface and Mock implementation.
+- `src/components`: Reusable UI (Layout, KpiCard).
+- `src/mock`: Seed data generation.
+- `src/pages`: Feature pages.
+- `src/types`: Domain interfaces (Employee, Department, etc.).
