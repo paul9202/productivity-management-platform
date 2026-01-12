@@ -3,17 +3,17 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
-    container_name: productivity_x_db
+    container_name: focus-postgres
     environment:
-      POSTGRES_DB: productivity_x
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: focus
+      POSTGRES_PASSWORD: focuspass
+      POSTGRES_DB: focusdb
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d productivity_x"]
+      test: [ "CMD-SHELL", "pg_isready -U admin -d productivity_x" ]
       interval: 5s
       timeout: 5s
       retries: 5

@@ -43,6 +43,14 @@ npm run dev
 ```
 Access the Admin UI at `http://localhost:5173`.
 
+### 4. Update from Remote
+If you need to pull the latest changes from the master/main branch:
+```bash
+# Ensure you are in the root directory (productivity-management-platform)
+git pull origin main
+```
+*Note: If you see "fatal: not a git repository", ensure you ran `git clone` and are inside the correct folder (`cd productivity-management-platform`)*.
+
 ## Architecture
 See `implementation_plan.md` for details.
 

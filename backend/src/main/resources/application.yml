@@ -2,7 +2,7 @@ spring:
   application:
     name: productivity-x-backend
   datasource:
-    url: jdbc:postgresql://localhost:5432/productivity_x
+    url: jdbc:postgresql://192.168.146.128:5432/focusdb
     username: focus
     password: focuspass
     driver-class-name: org.postgresql.Driver
