@@ -1,28 +1,19 @@
 package com.productivityx.controller;
 
-import com.productivityx.dto.PolicyResponse;
-import org.springframework.http.ResponseEntity;
+import com.productivityx.model.PolicySettings;
+import com.productivityx.repository.PolicySettingsRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-
 @RestController
-@RequestMapping("/api/policy")
+@RequestMapping("/api/policies")
 public class PolicyController {
 
-    @GetMapping("/agent")
-    public ResponseEntity<PolicyResponse> getAgentPolicy(
-            @RequestParam(required = false) String deptId) {
-        
-        // Mock Policy Logic for MVP
-        // In real app, fetch from DB based on Tenant/Department
-        
-        return ResponseEntity.ok(PolicyResponse.builder()
-                .focusThreshold(50)
-                .idleTimeoutSeconds(300)
-                .allowedAppCategories(Arrays.asList("work", "utility", "education"))
-                .updatedAt(LocalDateTime.now())
-                .build());
+    @Autowired
+    private PolicySettingsRepository policyRepository;
+
+    @GetMapping
+    public PolicySettings getPolicy() {
+        return policyRepository.findAll().stream().findFirst().orElse(null);
     }
 }

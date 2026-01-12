@@ -39,12 +39,30 @@ class MockApiClient implements ApiClient {
 }
 
 // HttpApiClient placeholder - in real app would use fetch/axios
+// HttpApiClient implementation using fetch
 class HttpApiClient implements ApiClient {
-    async getDashboardSummary(): Promise<DashboardSummary> { throw new Error("Not Implemented"); }
-    async listDepartments(): Promise<Department[]> { throw new Error("Not Implemented"); }
-    async listEmployees(): Promise<Employee[]> { throw new Error("Not Implemented"); }
-    async listAlerts(): Promise<AlertEvent[]> { throw new Error("Not Implemented"); }
-    async getPolicies(): Promise<PolicySettings> { throw new Error("Not Implemented"); }
+    async getDashboardSummary(): Promise<DashboardSummary> {
+        const res = await fetch('/api/dashboard/summary');
+        if (!res.ok) throw new Error('Failed to fetch dashboard');
+        return res.json();
+    }
+    async listDepartments(): Promise<Department[]> {
+        const res = await fetch('/api/departments');
+        return res.json();
+    }
+    async listEmployees(filter?: { deptId?: string }): Promise<Employee[]> {
+        // Query params could be added here
+        const res = await fetch('/api/employees');
+        return res.json();
+    }
+    async listAlerts(): Promise<AlertEvent[]> {
+        const res = await fetch('/api/alerts');
+        return res.json();
+    }
+    async getPolicies(): Promise<PolicySettings> {
+        const res = await fetch('/api/policies');
+        return res.json();
+    }
 }
 
 const api = import.meta.env.VITE_API_MODE === 'http' ? new HttpApiClient() : new MockApiClient();
