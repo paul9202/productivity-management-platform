@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: productivity-x-backend
+  datasource:
+    url: jdbc:postgresql://localhost:5432/productivity_x
+    username: admin
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+  ssl:
+    enabled: false # Terminated at Ingress/LB usually, or set to true if testing local mTLS directly
+
+logging:
+  level:
+    com.productivityx: DEBUG
+    org.springframework.security: INFO
+
+productivityx:
+  security:
+    mtls-header: "X-Client-Cert-Hash" # For simulation or LB forwarding
