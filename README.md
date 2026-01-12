@@ -15,6 +15,12 @@ Production-grade management platform for "Productivity-X".
 - Java 17+
 - Node.js 18+
 
+### 0. Clone Repository
+```bash
+git clone https://github.com/paul9202/productivity-management-platform.git
+cd productivity-management-platform
+```
+
 ### 1. Start Infrastructure
 ```bash
 docker-compose up -d
