@@ -33,15 +33,29 @@ Clean, enterprise-grade Web Admin Portal for Employee Productivity Enhancement S
   - `mock`: Uses in-memory seed data with simulated latency.
   - `http`: Calls real backend endpoints.
 
-## Future Integration
-To switch to real backend:
-1. Update `src/api/index.tsx` to implement `HttpApiClient` methods using fetch/axios.
-2. Set `VITE_API_MODE=http` in `.env`.
-3. Ensure Backend is running on port 8080.
+## Backend Integration (Optional)
+To run with the real Spring Boot backend:
+
+1.  **Configure Database**
+    Ensure PostgreSQL is running and credentials in `backend/src/main/resources/application.yml` are correct.
+
+2.  **Start Backend**
+    ```bash
+    cd backend
+    mvn clean install
+    mvn spring-boot:run
+    ```
+    - API: `http://localhost:8080/api`
+    - Health Check: `http://localhost:8080/api/health`
+
+3.  **Enable Frontend Connection**
+    Edit `frontend/.env`:
+    ```env
+    VITE_API_MODE=http
+    ```
+    Restart frontend (`npm run dev`).
 
 ## Project Structure
-- `src/api`: ApiClient interface and Mock implementation.
-- `src/components`: Reusable UI (Layout, KpiCard).
-- `src/mock`: Seed data generation.
-- `src/pages`: Feature pages.
-- `src/types`: Domain interfaces (Employee, Department, etc.).
+- `frontend/`: React + TypeScript Admin Portal
+- `backend/`: Spring Boot REST API + Flyway Migrations
+
