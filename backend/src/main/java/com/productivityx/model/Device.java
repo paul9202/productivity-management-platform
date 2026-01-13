@@ -41,4 +41,22 @@ public class Device {
     
     @Column(name = "agent_version")
     private String agentVersion;
+
+    @Column(name = "org_id")
+    private UUID orgId;
+
+    @Column(name = "hostname")
+    private String hostname;
+
+    @Column(name = "os_info")
+    private String osInfo;
+
+    @Column(name = "policy_version")
+    private String policyVersion;
+
+    @Column(name = "last_upload_at")
+    private LocalDateTime lastUploadAt;
+
+    @Column(name = "ack_status")
+    private String ackStatus; // PENDING, APPLIED, FAILED
 }
