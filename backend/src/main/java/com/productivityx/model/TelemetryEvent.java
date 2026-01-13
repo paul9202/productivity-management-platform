@@ -31,6 +31,6 @@ public class TelemetryEvent {
 
     // Simplified for MVP, JSONB handling would need a custom Type or converter
     // or we just store it as string for now if not querying inside JSON
-    @Column(columnDefinition = "jsonb")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     private String data; 
 }

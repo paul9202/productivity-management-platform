@@ -15,6 +15,7 @@ public class AuditLog {
     private UUID id;
     private UUID actorId;
     private String action;
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     private String details; // storing as String (JSON) for simplicity in demo
     private LocalDateTime timestamp;
 }
