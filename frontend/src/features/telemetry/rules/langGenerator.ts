@@ -40,7 +40,7 @@ export const generateExecutiveReport = (
     } else {
         // Compliance
         summaryText = `Audit Report for ${targetName}. Total Risk Events: ${riskInsights.length}. `;
-        summaryText += `USB Events: ${ctx.summary.riskCounters.usbEvents}. Blocked Sites: ${ctx.summary.riskCounters.blocks}.`;
+        summaryText += `USB Events: ${ctx.summary.riskCounters?.usbEvents || 0}. Blocked Sites: ${ctx.summary.riskCounters?.blocks || 0}.`;
         conclusion = riskInsights.length > 0 ? 'Non-Compliant' : 'Compliant';
     }
 
@@ -55,8 +55,8 @@ export const generateExecutiveReport = (
         summary: summaryText,
         keyInsights,
         topActivities: {
-            apps: ctx.topApps.slice(0, 3).map(a => a.name),
-            domains: ctx.topDomains.slice(0, 3).map(a => a.name)
+            apps: (ctx.topApps || []).slice(0, 3).map(a => a.name),
+            domains: (ctx.topDomains || []).slice(0, 3).map(a => a.name)
         },
         conclusion,
         disclaimer: 'This report is generated based on automated telemetry analysis and may contain false positives. Please verify with actual logs.'

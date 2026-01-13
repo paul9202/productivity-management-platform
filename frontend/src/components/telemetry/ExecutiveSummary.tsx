@@ -113,10 +113,10 @@ export const ExecutiveSummary: React.FC<Props> = ({ summary, insights, managerSn
 
             {/* Risk Detail Counters */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
-                <RiskCounter label="Blocked Sites" count={summary.riskCounters.blocks} icon={ShieldAlert} />
-                <RiskCounter label="Sens. Keywords" count={summary.riskCounters.sensitiveKeywords} icon={FileText} />
-                <RiskCounter label="USB Events" count={summary.riskCounters.usbEvents} icon={AlertTriangle} />
-                <RiskCounter label="Anomalies" count={summary.riskCounters.anomalies} icon={Monitor} />
+                <RiskCounter label="Blocked Sites" count={summary.riskCounters?.blocks || 0} icon={ShieldAlert} />
+                <RiskCounter label="Sens. Keywords" count={summary.riskCounters?.sensitiveKeywords || 0} icon={FileText} />
+                <RiskCounter label="USB Events" count={summary.riskCounters?.usbEvents || 0} icon={AlertTriangle} />
+                <RiskCounter label="Anomalies" count={summary.riskCounters?.anomalies || 0} icon={Monitor} />
             </div>
         </div>
     );
