@@ -182,9 +182,10 @@ public class TelemetryService {
         // Re-implementing M5 Mock Logic for Demo
         com.productivityx.dto.telemetry.TelemetrySummaryDTO summary = new com.productivityx.dto.telemetry.TelemetrySummaryDTO();
         summary.setDeviceId(deviceId);
-        summary.setPeriod(from + " to " + to);
-        summary.setActiveTimeSeconds(25000L); // ~7h
-        summary.setIdleTimeSeconds(3600L); // 1h
+        summary.setFrom(from);
+        summary.setTo(to);
+        summary.setTotalActiveSeconds(25000L); // ~7h
+        summary.setTotalIdleSeconds(3600L); // 1h
         summary.setFocusScore(85);
         summary.setProductivityTrend("UP");
         summary.setTopApps(java.util.List.of(
