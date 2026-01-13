@@ -2,6 +2,7 @@ import {
     DashboardSummary, Department, Employee, AlertEvent, PolicySettings, Device, DeviceGroup, Policy, PolicyVersion, PolicyAck, EnrollmentToken, TelemetryEvent
 } from '../types';
 import { TelemetrySummary, TimelineBucket, TelemetryEvent as AdvancedTelemetryEvent } from '../types/telemetry';
+import { DashboardData } from '../types/dashboard';
 import { getMockTelemetrySummary, getMockTimeline, getMockEvents } from './mock/telemetryData';
 import { LoginRequest, LoginResponse } from '../types/auth';
 import { MOCK_ALERTS, MOCK_DASHBOARD, MOCK_DEPARTMENTS, MOCK_EMPLOYEES, MOCK_POLICY } from '../mock/mockData';
@@ -10,6 +11,7 @@ import React, { createContext, useContext } from 'react';
 export interface ApiClient {
     login(req: LoginRequest): Promise<LoginResponse>;
     getDashboardSummary(): Promise<DashboardSummary>;
+    getDashboardData(range?: string, scopeType?: string, scopeId?: string): Promise<DashboardData>;
 
     // Departments
     listDepartments(): Promise<Department[]>;
@@ -205,6 +207,11 @@ class MockApiClient implements ApiClient {
     async getDashboardSummary(): Promise<DashboardSummary> {
         return new Promise(resolve => setTimeout(() => resolve(MOCK_DASHBOARD), 300));
     }
+    async getDashboardData(range?: string, scopeType?: string, scopeId?: string): Promise<DashboardData> {
+        // Dynamic mock generation
+        const mock = await import('../features/dashboard/logic/mockGenerator').then(m => m.generateMockDashboard());
+        return new Promise(resolve => setTimeout(() => resolve(mock), 600));
+    }
     async listDepartments(): Promise<Department[]> {
         return new Promise(resolve => setTimeout(() => resolve(MOCK_DEPARTMENTS), 200));
     }
@@ -241,6 +248,16 @@ class HttpApiClient implements ApiClient {
     async getDashboardSummary(): Promise<DashboardSummary> {
         const res = await fetch('/api/dashboard/summary');
         if (!res.ok) throw new Error('Failed to fetch dashboard');
+        return res.json();
+    }
+    async getDashboardData(range?: string, scopeType?: string, scopeId?: string): Promise<DashboardData> {
+        const params = new URLSearchParams();
+        if (range) params.append('range', range);
+        if (scopeType) params.append('scopeType', scopeType);
+        if (scopeId) params.append('scopeId', scopeId);
+
+        const res = await fetch(`/api/dashboard?${params.toString()}`);
+        if (!res.ok) throw new Error('Failed to fetch dashboard data');
         return res.json();
     }
     async listDepartments(): Promise<Department[]> {
