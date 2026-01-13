@@ -39,6 +39,10 @@ const Layout: React.FC = () => {
                             <NavLink to="/" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Dashboard</NavLink>
                         </li>
 
+                        <li key="Devices">
+                            <NavLink to="/devices" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Devices</NavLink>
+                        </li>
+
                         {(hasRole(['ADMIN', 'MANAGER'])) && (
                             <>
                                 <li key="Employees">

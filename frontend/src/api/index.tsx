@@ -1,5 +1,5 @@
 import {
-    DashboardSummary, Department, Employee, AlertEvent, PolicySettings
+    DashboardSummary, Department, Employee, AlertEvent, PolicySettings, Device
 } from '../types';
 import { LoginRequest, LoginResponse } from '../types/auth';
 import { MOCK_ALERTS, MOCK_DASHBOARD, MOCK_DEPARTMENTS, MOCK_EMPLOYEES, MOCK_POLICY } from '../mock/mockData';
@@ -12,9 +12,16 @@ export interface ApiClient {
     listEmployees(filter?: { deptId?: string }): Promise<Employee[]>;
     listAlerts(): Promise<AlertEvent[]>;
     getPolicies(): Promise<PolicySettings>;
+    listDevices(): Promise<Device[]>;
 }
 
 class MockApiClient implements ApiClient {
+    async listDevices(): Promise<Device[]> {
+        return new Promise(resolve => setTimeout(() => resolve([
+            { id: 'dev-1', name: 'Mock Device 1', status: 'ONLINE', groupId: 'g1', tenantId: 't1', version: '1.0', lastSeenAt: new Date().toISOString() },
+            { id: 'dev-2', name: 'Mock Device 2', status: 'OFFLINE', groupId: 'g1', tenantId: 't1', version: '1.0', lastSeenAt: new Date().toISOString() }
+        ]), 300));
+    }
     async login(req: LoginRequest): Promise<LoginResponse> {
         return new Promise((resolve, reject) => {
             setTimeout(() => {

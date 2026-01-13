@@ -67,3 +67,13 @@ export interface PolicySettings {
     whitelistedApps: string[];
     blacklistedSites: string[];
 }
+
+export interface Device {
+    id: string;
+    name: string;
+    status: string; // ONLINE, OFFLINE, ERROR
+    groupId?: string;
+    tenantId: string;
+    version: string;
+    lastSeenAt: string;
+}

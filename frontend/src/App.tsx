@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
+import Devices from './pages/Devices';
 import Employees from './pages/Employees';
 import Departments from './pages/Departments';
 import Alerts from './pages/Alerts';
@@ -24,6 +25,7 @@ const App: React.FC = () => {
                             <Route path="/" element={<Layout />}>
                                 <Route index element={<Dashboard />} />
                                 <Route path="alerts" element={<Alerts />} />
+                                <Route path="devices" element={<Devices />} />
                             </Route>
                         </Route>
 
