@@ -28,12 +28,14 @@ public class EnrollmentTokenController {
         token.setCreatedAt(LocalDateTime.now());
         token.setUsedCount(0);
         if (token.getCreatedBy() == null) {
-            token.setCreatedBy(UUID.fromString("00000000-0000-0000-0000-000000000000")); // System User
+            // Default to 'System Admin' from V3 seed data
+            token.setCreatedBy(UUID.fromString("20000000-0000-0000-0000-000000000001")); 
         }
         
         // Handle "current-tenant-id" from frontend or missing value
         if (token.getScopeTenantId() == null) {
-             token.setScopeTenantId(UUID.fromString("00000000-0000-0000-0000-000000000000")); // Default Tenant
+             // Default to 'Acme Corp' from V3 seed data
+             token.setScopeTenantId(UUID.fromString("10000000-0000-0000-0000-000000000001")); 
         }
 
         // Generate a random token secret if not provided (mock)
