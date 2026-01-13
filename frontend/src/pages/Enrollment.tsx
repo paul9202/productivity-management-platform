@@ -27,18 +27,28 @@ const Enrollment: React.FC = () => {
 
     const loadData = async () => {
         setLoading(true);
-        try {
-            const [tokenList, groupList] = await Promise.all([
-                api.listEnrollmentTokens(),
-                api.listDeviceGroups()
-            ]);
-            setTokens(tokenList);
-            setGroups(groupList);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
+
+        // Load independent data sources
+        const results = await Promise.allSettled([
+            api.listEnrollmentTokens(),
+            api.listDeviceGroups()
+        ]);
+
+        // Handle Tokens
+        if (results[0].status === 'fulfilled') {
+            setTokens(results[0].value);
+        } else {
+            console.error("Failed to load tokens:", results[0].reason);
         }
+
+        // Handle Groups
+        if (results[1].status === 'fulfilled') {
+            setGroups(results[1].value);
+        } else {
+            console.error("Failed to load groups:", results[1].reason);
+        }
+
+        setLoading(false);
     };
 
     const handleCreate = async () => {
