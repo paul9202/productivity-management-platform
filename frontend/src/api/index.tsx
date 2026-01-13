@@ -41,6 +41,7 @@ export interface ApiClient {
     listPolicyVersions(policyId: string): Promise<PolicyVersion[]>;
     createPolicyVersion(policyId: string, version: Partial<PolicyVersion>): Promise<PolicyVersion>;
     publishPolicyVersion(policyId: string, versionId: string): Promise<Policy>;
+    deletePolicy(id: string): Promise<void>;
 }
 
 class MockApiClient implements ApiClient {
@@ -90,6 +91,9 @@ class MockApiClient implements ApiClient {
     }
     async publishPolicyVersion(_policyId: string, _versionId: string): Promise<Policy> {
         return this.getPolicy(_policyId);
+    }
+    async deletePolicy(_id: string): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, 300));
     }
     async listDevices(): Promise<Device[]> {
         return new Promise(resolve => setTimeout(() => resolve([
@@ -347,6 +351,10 @@ class HttpApiClient implements ApiClient {
         const res = await fetch(`/api/policies/${policyId}/publish/${versionId}`, { method: 'POST' });
         if (!res.ok) throw new Error('Failed to publish version');
         return res.json();
+    }
+    async deletePolicy(id: string): Promise<void> {
+        const res = await fetch(`/api/policies/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete policy');
     }
 }
 

@@ -17,6 +17,7 @@ public class PolicyVersion {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "policy_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Policy policy;
 
     @Column(nullable = false)

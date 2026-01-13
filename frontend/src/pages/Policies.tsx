@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useApi } from '../api';
 import { Policy, PolicyVersion } from '../types';
-import { Shield, Plus, Edit2, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Shield, Plus, Edit2, CheckCircle, ArrowLeft, Trash2 } from 'lucide-react';
 import PolicyEditor from '../components/PolicyEditor';
 import { Modal } from '../components/Modal';
 
@@ -43,7 +43,7 @@ const Policies: React.FC = () => {
     const handleCreateSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const created = await api.createPolicy({ ...newPolicyData, organizationId: 'org1' });
+            const created = await api.createPolicy({ ...newPolicyData, organizationId: '10000000-0000-0000-0000-000000000001' });
             setShowCreateModal(false);
             loadPolicies();
             // Optional: Auto-open editor
@@ -72,6 +72,17 @@ const Policies: React.FC = () => {
             alert('Failed to load policy details');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('Are you sure you want to delete this policy?')) return;
+        try {
+            await api.deletePolicy(id);
+            loadPolicies();
+        } catch (err) {
+            console.error(err);
+            alert('Failed to delete policy');
         }
     };
 
@@ -159,6 +170,10 @@ const Policies: React.FC = () => {
                                     <button className="btn-text" onClick={() => handleEditClick(policy)}>
                                         <Edit2 size={16} />
                                         Edit
+                                    </button>
+                                    <button className="btn-text danger" onClick={() => handleDelete(policy.id)}>
+                                        <Trash2 size={16} />
+                                        Delete
                                     </button>
                                 </td>
                             </tr>

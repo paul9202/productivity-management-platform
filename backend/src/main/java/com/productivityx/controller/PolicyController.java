@@ -41,6 +41,10 @@ public class PolicyController {
         return policyRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePolicy(@PathVariable UUID id) {
+        policyRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
     
     // --- Versioning ---
