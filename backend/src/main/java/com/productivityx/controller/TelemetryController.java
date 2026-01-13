@@ -20,9 +20,23 @@ public class TelemetryController {
     @PostMapping("/focus/batch")
     public ResponseEntity<TelemetryResponse> ingestBatch(
             Authentication authentication,
-            @RequestBody List<TelemetryBatchRequest> batch) {
+            @RequestBody List<TelemetryBatchRequest> batch,
+            jakarta.servlet.http.HttpServletRequest request) {
         
-        String deviceId = authentication.getName(); // Extracted from mTLS/Header by SecurityConfig
+        String deviceId = authentication.getName(); 
+        
+        // Fallback for Mock/HTTP mode where mTLS isn't populating the Principal
+        if (deviceId == null || "anonymousUser".equals(deviceId)) {
+            deviceId = request.getHeader("X-Device-ID");
+            if (deviceId == null || deviceId.isBlank()) {
+                // Try X-Client-Cert-Hash just in case
+                deviceId = request.getHeader("X-Client-Cert-Hash");
+            }
+        }
+        
+        if (deviceId == null || deviceId.isBlank()) {
+            return ResponseEntity.status(401).build();
+        }
         
         TelemetryResponse response = telemetryService.ingestBatch(deviceId, batch);
         return ResponseEntity.ok(response);
