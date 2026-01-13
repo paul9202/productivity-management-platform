@@ -8,11 +8,27 @@ import React, { createContext, useContext } from 'react';
 export interface ApiClient {
     login(req: LoginRequest): Promise<LoginResponse>;
     getDashboardSummary(): Promise<DashboardSummary>;
+
+    // Departments
     listDepartments(): Promise<Department[]>;
+    createDepartment(dept: Partial<Department>): Promise<Department>;
+    updateDepartment(id: string, dept: Partial<Department>): Promise<Department>;
+    deleteDepartment(id: string): Promise<void>;
+
+    // Employees
     listEmployees(filter?: { deptId?: string }): Promise<Employee[]>;
+    createEmployee(emp: Partial<Employee>): Promise<Employee>; // Maps to User backend
+    updateEmployee(id: string, emp: Partial<Employee>): Promise<Employee>;
+    deleteEmployee(id: string): Promise<void>;
+
     listAlerts(): Promise<AlertEvent[]>;
     getPolicies(): Promise<PolicySettings>;
+
+    // Devices
     listDevices(): Promise<Device[]>;
+    updateDevice(id: string, device: Partial<Device>): Promise<Device>;
+    deleteDevice(id: string): Promise<void>;
+
     listDeviceGroups(): Promise<DeviceGroup[]>;
     createDeviceGroup(group: Partial<DeviceGroup>): Promise<DeviceGroup>;
 }
@@ -39,6 +55,32 @@ class MockApiClient implements ApiClient {
             { id: 'dev-2', name: 'Mock Device 2', status: 'OFFLINE', groupId: 'g1', tenantId: 't1', version: '1.0', lastSeenAt: new Date().toISOString() }
         ]), 300));
     }
+    async updateDevice(id: string, device: Partial<Device>): Promise<Device> {
+        return new Promise(resolve => setTimeout(() => resolve({
+            ...device, id
+        } as Device), 300));
+    }
+    async deleteDevice(id: string): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, 300));
+    }
+
+    // Departments Mock
+    async createDepartment(dept: Partial<Department>): Promise<Department> {
+        return new Promise(resolve => setTimeout(() => resolve({ ...dept, id: 'dept-new' } as Department), 300));
+    }
+    async updateDepartment(id: string, dept: Partial<Department>): Promise<Department> {
+        return new Promise(resolve => setTimeout(() => resolve({ ...dept, id } as Department), 300));
+    }
+    async deleteDepartment(id: string): Promise<void> { return new Promise(resolve => setTimeout(resolve, 300)); }
+
+    // Employees Mock
+    async createEmployee(emp: Partial<Employee>): Promise<Employee> {
+        return new Promise(resolve => setTimeout(() => resolve({ ...emp, id: 'emp-new' } as Employee), 300));
+    }
+    async updateEmployee(id: string, emp: Partial<Employee>): Promise<Employee> {
+        return new Promise(resolve => setTimeout(() => resolve({ ...emp, id } as Employee), 300));
+    }
+    async deleteEmployee(id: string): Promise<void> { return new Promise(resolve => setTimeout(resolve, 300)); }
     async login(req: LoginRequest): Promise<LoginResponse> {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
@@ -147,6 +189,69 @@ class HttpApiClient implements ApiClient {
         });
         if (!res.ok) throw new Error('Failed to create device group');
         return res.json();
+    }
+
+    // Departments HTTP
+    async createDepartment(dept: Partial<Department>): Promise<Department> {
+        const res = await fetch('/api/departments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dept)
+        });
+        if (!res.ok) throw new Error('Failed to create department');
+        return res.json();
+    }
+    async updateDepartment(id: string, dept: Partial<Department>): Promise<Department> {
+        const res = await fetch(`/api/departments/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dept)
+        });
+        if (!res.ok) throw new Error('Failed to update department');
+        return res.json();
+    }
+    async deleteDepartment(id: string): Promise<void> {
+        const res = await fetch(`/api/departments/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete department');
+    }
+
+    // Employees HTTP
+    async createEmployee(emp: Partial<Employee>): Promise<Employee> {
+        const res = await fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(emp) // Backend expects User, Frontend sends Employee (need mapping if different)
+        });
+        if (!res.ok) throw new Error('Failed to create user');
+        return res.json();
+    }
+    async updateEmployee(id: string, emp: Partial<Employee>): Promise<Employee> {
+        const res = await fetch(`/api/users/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(emp)
+        });
+        if (!res.ok) throw new Error('Failed to update user');
+        return res.json();
+    }
+    async deleteEmployee(id: string): Promise<void> {
+        const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete user');
+    }
+
+    // Devices HTTP
+    async updateDevice(id: string, device: Partial<Device>): Promise<Device> {
+        const res = await fetch(`/api/devices/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(device)
+        });
+        if (!res.ok) throw new Error('Failed to update device');
+        return res.json();
+    }
+    async deleteDevice(id: string): Promise<void> {
+        const res = await fetch(`/api/devices/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete device');
     }
 }
 

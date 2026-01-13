@@ -25,4 +25,24 @@ public class UserController {
         // In a real app we would hash the password here
         return ResponseEntity.ok(userRepository.save(user));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateUser(@PathVariable java.util.UUID id, @RequestBody User user) {
+        return userRepository.findById(id)
+            .map(existing -> {
+                existing.setName(user.getName());
+                existing.setEmail(user.getEmail());
+                existing.setRole(user.getRole());
+                existing.setDepartmentId(user.getDepartmentId());
+                existing.setStatus(user.getStatus());
+                return ResponseEntity.ok(userRepository.save(existing));
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable java.util.UUID id) {
+        userRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }

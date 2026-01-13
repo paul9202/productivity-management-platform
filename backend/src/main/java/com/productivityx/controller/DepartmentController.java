@@ -25,4 +25,21 @@ public class DepartmentController {
     public ResponseEntity<Department> createDepartment(@RequestBody Department dept) {
         return ResponseEntity.ok(deptRepository.save(dept));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Department> updateDepartment(@PathVariable java.util.UUID id, @RequestBody Department dept) {
+        return deptRepository.findById(id)
+            .map(existing -> {
+                existing.setName(dept.getName());
+                existing.setManagerId(dept.getManagerId());
+                return ResponseEntity.ok(deptRepository.save(existing));
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDepartment(@PathVariable java.util.UUID id) {
+        deptRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }
