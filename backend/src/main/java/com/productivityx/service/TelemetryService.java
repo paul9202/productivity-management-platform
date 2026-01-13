@@ -44,7 +44,7 @@ public class TelemetryService {
                 TelemetryEvent event = new TelemetryEvent();
                 event.setDeviceId(deviceId);
                 event.setEventId(item.getEventId());
-                event.setTimestamp(item.getTimestamp());
+                event.setTimestamp(item.getTimestamp().toLocalDateTime()); // Convert Offset to Local (strips offset, assuming UTC)
                 event.setFocusScore(item.getFocusScore());
                 event.setAwaySeconds(item.getAwaySeconds());
                 event.setIdleSeconds(item.getIdleSeconds());

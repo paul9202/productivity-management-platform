@@ -21,7 +21,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable()) // Disable CSRF for simple REST API
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/**", "/error").permitAll() // Allow all API calls + Error page
+                .requestMatchers("/api/**", "/error", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Allow all API calls + Error page + Swagger
                 .anyRequest().authenticated()
             );
         return http.build();
