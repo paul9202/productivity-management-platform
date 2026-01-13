@@ -21,7 +21,7 @@ public class TelemetryEvent {
     private LocalDateTime timestamp;
     
     @Column(name = "focus_score")
-    private Integer focusScore;
+    private Double focusScore;
     
     @Column(name = "away_seconds")
     private Integer awaySeconds;

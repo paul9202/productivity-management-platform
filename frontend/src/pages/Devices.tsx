@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useApi } from '../api';
-import { Device } from '../types';
+import { Device, TelemetryEvent } from '../types';
 import { Modal } from '../components/Modal';
-import { Monitor, Edit2, Trash2, Plus, Wifi, WifiOff, AlertTriangle } from 'lucide-react';
+import { Monitor, Edit2, Trash2, Plus, Wifi, WifiOff, AlertTriangle, Activity } from 'lucide-react';
 
 const Devices: React.FC = () => {
     const api = useApi();
     const [devices, setDevices] = useState<Device[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [showTelemetryModal, setShowTelemetryModal] = useState(false);
     const [editingDevice, setEditingDevice] = useState<Device | null>(null);
+    const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+    const [telemetry, setTelemetry] = useState<TelemetryEvent[]>([]);
     const [formData, setFormData] = useState({ name: '', groupId: '' });
 
     useEffect(() => {
@@ -46,6 +49,19 @@ const Devices: React.FC = () => {
         setEditingDevice(device);
         setFormData({ name: device.name, groupId: device.groupId || '' });
         setShowModal(true);
+    };
+
+    const handleTelemetryClick = async (device: Device) => {
+        setSelectedDevice(device);
+        setShowTelemetryModal(true);
+        setTelemetry([]); // clear previous
+        try {
+            const events = await api.getDeviceTelemetry(device.id);
+            setTelemetry(events);
+        } catch (e) {
+            console.error(e);
+            alert('Failed to load telemetry');
+        }
     };
 
     const handleDeleteClick = async (id: string) => {
@@ -134,6 +150,9 @@ const Devices: React.FC = () => {
                                         <button className="btn-icon" onClick={() => handleEditClick(dev)} title="Edit">
                                             <Edit2 size={16} />
                                         </button>
+                                        <button className="btn-icon" onClick={() => handleTelemetryClick(dev)} title="View Telemetry">
+                                            <Activity size={16} />
+                                        </button>
                                         <button className="btn-icon" onClick={() => handleDeleteClick(dev.id)} title="Delete" style={{ color: 'var(--danger)' }}>
                                             <Trash2 size={16} />
                                         </button>
@@ -177,6 +196,42 @@ const Devices: React.FC = () => {
                         <button type="submit" className="btn-primary">Save Changes</button>
                     </div>
                 </form>
+            </Modal>
+
+            <Modal
+                isOpen={showTelemetryModal}
+                onClose={() => setShowTelemetryModal(false)}
+                title={`Telemetry: ${selectedDevice?.name || 'Device'}`}
+                size="lg"
+            >
+                <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                    <table style={{ width: '100%', fontSize: '0.875rem' }}>
+                        <thead>
+                            <tr style={{ textAlign: 'left', borderBottom: '1px solid #eee' }}>
+                                <th style={{ padding: 8 }}>Timestamp</th>
+                                <th style={{ padding: 8 }}>Focus Score</th>
+                                <th style={{ padding: 8 }}>Away (s)</th>
+                                <th style={{ padding: 8 }}>Idle (s)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {telemetry.length === 0 ? (
+                                <tr><td colSpan={4} style={{ padding: 16, textAlign: 'center', color: '#888' }}>No telemetry data found.</td></tr>
+                            ) : (
+                                telemetry.map(t => (
+                                    <tr key={t.eventId} style={{ borderBottom: '1px solid #f9f9f9' }}>
+                                        <td style={{ padding: 8 }}>{new Date(t.timestamp).toLocaleString()}</td>
+                                        <td style={{ padding: 8, fontWeight: 'bold', color: t.focusScore > 0.7 ? 'green' : (t.focusScore > 0.4 ? 'orange' : 'red') }}>
+                                            {typeof t.focusScore === 'number' ? (t.focusScore * 100).toFixed(0) : 0}%
+                                        </td>
+                                        <td style={{ padding: 8 }}>{t.awaySeconds}</td>
+                                        <td style={{ padding: 8 }}>{t.idleSeconds}</td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </Modal>
         </div>
     );

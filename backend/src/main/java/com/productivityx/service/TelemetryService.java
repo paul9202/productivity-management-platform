@@ -93,4 +93,7 @@ public class TelemetryService {
             });
         }
     }
+    public List<TelemetryEvent> getEvents(String deviceId, int page, int size) {
+        return telemetryRepository.findByDeviceIdOrderByTimestampDesc(deviceId, org.springframework.data.domain.PageRequest.of(page, size)).getContent();
+    }
 }

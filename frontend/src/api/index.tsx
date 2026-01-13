@@ -1,5 +1,5 @@
 import {
-    DashboardSummary, Department, Employee, AlertEvent, PolicySettings, Device, DeviceGroup, Policy, PolicyVersion, PolicyAck, EnrollmentToken
+    DashboardSummary, Department, Employee, AlertEvent, PolicySettings, Device, DeviceGroup, Policy, PolicyVersion, PolicyAck, EnrollmentToken, TelemetryEvent
 } from '../types';
 import { LoginRequest, LoginResponse } from '../types/auth';
 import { MOCK_ALERTS, MOCK_DASHBOARD, MOCK_DEPARTMENTS, MOCK_EMPLOYEES, MOCK_POLICY } from '../mock/mockData';
@@ -26,6 +26,7 @@ export interface ApiClient {
 
     // Devices
     listDevices(): Promise<Device[]>;
+    getDeviceTelemetry(deviceId: string): Promise<TelemetryEvent[]>;
     updateDevice(id: string, device: Partial<Device>): Promise<Device>;
     deleteDevice(id: string): Promise<void>;
 
@@ -128,8 +129,13 @@ class MockApiClient implements ApiClient {
     }
     async listDevices(): Promise<Device[]> {
         return new Promise(resolve => setTimeout(() => resolve([
-            { id: 'dev-1', name: 'Mock Device 1', status: 'ONLINE', groupId: 'g1', tenantId: 't1', version: '1.0', lastSeenAt: new Date().toISOString() },
             { id: 'dev-2', name: 'Mock Device 2', status: 'OFFLINE', groupId: 'g1', tenantId: 't1', version: '1.0', lastSeenAt: new Date().toISOString() }
+        ]), 300));
+    }
+    async getDeviceTelemetry(_id: string): Promise<TelemetryEvent[]> {
+        return new Promise(resolve => setTimeout(() => resolve([
+            { eventId: 'e1', deviceId: _id, timestamp: new Date().toISOString(), focusScore: 0.85, awaySeconds: 0, idleSeconds: 0, data: '{}' },
+            { eventId: 'e2', deviceId: _id, timestamp: new Date(Date.now() - 5000).toISOString(), focusScore: 0.92, awaySeconds: 0, idleSeconds: 0, data: '{}' }
         ]), 300));
     }
     async updateDevice(id: string, device: Partial<Device>): Promise<Device> {
@@ -337,6 +343,11 @@ class HttpApiClient implements ApiClient {
             body: JSON.stringify(device)
         });
         if (!res.ok) throw new Error('Failed to update device');
+        return res.json();
+    }
+    async getDeviceTelemetry(deviceId: string): Promise<TelemetryEvent[]> {
+        const res = await fetch(`/api/telemetry/device/${deviceId}`);
+        if (!res.ok) throw new Error('Failed to fetch telemetry');
         return res.json();
     }
     async deleteDevice(id: string): Promise<void> {

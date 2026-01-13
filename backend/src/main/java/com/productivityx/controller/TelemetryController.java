@@ -44,4 +44,12 @@ public class TelemetryController {
         TelemetryResponse response = telemetryService.ingestBatch(deviceId, batch);
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/device/{deviceId}")
+    public ResponseEntity<List<com.productivityx.model.TelemetryEvent>> getDeviceTelemetry(
+            @PathVariable String deviceId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        
+        return ResponseEntity.ok(telemetryService.getEvents(deviceId, page, size));
+    }
 }

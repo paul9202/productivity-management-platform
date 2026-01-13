@@ -8,7 +8,7 @@ import java.util.Map;
 public class TelemetryBatchRequest {
     private String eventId;
     private OffsetDateTime timestamp;
-    private Integer focusScore;
+    private Double focusScore;
     private Integer awaySeconds;
     private Integer idleSeconds;
     private String cameraState;

@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TelemetryEventRepository extends JpaRepository<TelemetryEvent, TelemetryEventId> {
+    org.springframework.data.domain.Page<TelemetryEvent> findByDeviceIdOrderByTimestampDesc(String deviceId, org.springframework.data.domain.Pageable pageable);
 }

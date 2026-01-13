@@ -134,3 +134,13 @@ export interface EnrollmentToken {
     scopeGroupId?: string;
     createdAt: string;
 }
+
+export interface TelemetryEvent {
+    eventId: string;
+    deviceId: string;
+    timestamp: string;
+    focusScore: number;
+    awaySeconds: number;
+    idleSeconds: number;
+    data: string; // JSON String
+}
