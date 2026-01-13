@@ -56,7 +56,7 @@ const Devices: React.FC = () => {
         setShowTelemetryModal(true);
         setTelemetry([]); // clear previous
         try {
-            const events = await api.getDeviceTelemetry(device.id);
+            const events = await api.getDeviceTelemetry(device.deviceId);
             setTelemetry(events);
         } catch (e) {
             console.error(e);
@@ -84,7 +84,7 @@ const Devices: React.FC = () => {
                     ...formData,
                     groupId: formData.groupId || undefined
                 };
-                await api.updateDevice(editingDevice.id, payload);
+                await api.updateDevice(editingDevice.deviceId, payload);
             }
             setShowModal(false);
             loadDevices();
@@ -125,7 +125,7 @@ const Devices: React.FC = () => {
                     </thead>
                     <tbody>
                         {devices.map(dev => (
-                            <tr key={dev.id}>
+                            <tr key={dev.deviceId}>
                                 <td>
                                     <div className="flex-row gap-sm">
                                         <div style={{ padding: 8, background: '#f1f5f9', borderRadius: 8, color: '#475569' }}>
@@ -134,7 +134,7 @@ const Devices: React.FC = () => {
                                         <span style={{ fontWeight: 500 }}>{dev.name}</span>
                                     </div>
                                 </td>
-                                <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-light)' }}>{dev.id}</td>
+                                <td style={{ fontFamily: 'monospace', fontSize: '0.8125rem', color: 'var(--text-light)' }}>{dev.deviceId}</td>
                                 <td>
                                     <span className={`badge badge-${getStatusColor(dev.status)}`}>
                                         {getStatusIcon(dev.status)}
@@ -153,7 +153,7 @@ const Devices: React.FC = () => {
                                         <button className="btn-icon" onClick={() => handleTelemetryClick(dev)} title="View Telemetry">
                                             <Activity size={16} />
                                         </button>
-                                        <button className="btn-icon" onClick={() => handleDeleteClick(dev.id)} title="Delete" style={{ color: 'var(--danger)' }}>
+                                        <button className="btn-icon" onClick={() => handleDeleteClick(dev.deviceId)} title="Delete" style={{ color: 'var(--danger)' }}>
                                             <Trash2 size={16} />
                                         </button>
                                     </div>

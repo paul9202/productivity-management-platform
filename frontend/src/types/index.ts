@@ -72,7 +72,7 @@ export interface PolicySettings {
 }
 
 export interface Device {
-    id: string;
+    deviceId: string;
     name: string;
     status: string; // ONLINE, OFFLINE, ERROR
     groupId?: string;

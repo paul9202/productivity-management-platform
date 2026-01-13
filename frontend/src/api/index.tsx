@@ -129,7 +129,7 @@ class MockApiClient implements ApiClient {
     }
     async listDevices(): Promise<Device[]> {
         return new Promise(resolve => setTimeout(() => resolve([
-            { id: 'dev-2', name: 'Mock Device 2', status: 'OFFLINE', groupId: 'g1', tenantId: 't1', version: '1.0', lastSeenAt: new Date().toISOString() }
+            { deviceId: 'dev-2', name: 'Mock Device 2', status: 'OFFLINE', groupId: 'g1', tenantId: 't1', version: '1.0', lastSeenAt: new Date().toISOString() }
         ]), 300));
     }
     async getDeviceTelemetry(_id: string): Promise<TelemetryEvent[]> {
@@ -140,7 +140,7 @@ class MockApiClient implements ApiClient {
     }
     async updateDevice(id: string, device: Partial<Device>): Promise<Device> {
         return new Promise(resolve => setTimeout(() => resolve({
-            ...device, id
+            ...device, deviceId: id
         } as Device), 300));
     }
     async deleteDevice(_id: string): Promise<void> {
