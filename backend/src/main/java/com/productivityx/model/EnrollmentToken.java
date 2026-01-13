@@ -15,6 +15,9 @@ public class EnrollmentToken {
     @Column(name = "token_hash", nullable = false)
     private String tokenHash;
 
+    @Transient
+    private String token; // Not stored, used for transmission only
+
     @Column(nullable = false)
     private String type; // BOOTSTRAP, REGCODE
 
