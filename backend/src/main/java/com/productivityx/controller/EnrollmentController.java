@@ -79,6 +79,8 @@ public class EnrollmentController {
         }
         device.setGroupId(effectiveGroupId);
         device.setAgentVersion(request.getAgentVersion());
+        // Map OS Version to 'version' field
+        device.setVersion(request.getOsVersion());
         device.setLastSeenAt(LocalDateTime.now());
         device.setStatus("ONLINE");
         

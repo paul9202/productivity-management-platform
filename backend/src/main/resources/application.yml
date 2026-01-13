@@ -25,7 +25,9 @@ server:
 
 logging:
   level:
+    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
     com.productivityx: DEBUG
+
     org.springframework.security: INFO
 
 productivityx:
