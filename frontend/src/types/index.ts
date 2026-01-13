@@ -89,3 +89,22 @@ export interface DeviceGroup {
     createdAt: string;
     deviceCount?: number; // Optional, for UI display if needed
 }
+
+export interface Policy {
+    id: string;
+    name: string;
+    description: string;
+    organizationId: string;
+    activeVersionId?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface PolicyVersion {
+    id: string;
+    policyId: string;
+    version: number;
+    configuration: string; // JSON string
+    createdAt: string;
+    createdBy?: string;
+}

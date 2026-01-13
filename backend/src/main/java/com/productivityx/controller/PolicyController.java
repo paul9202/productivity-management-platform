@@ -1,21 +1,80 @@
 package com.productivityx.controller;
 
+import com.productivityx.model.Policy;
+import com.productivityx.model.PolicyVersion;
+import com.productivityx.repository.PolicyRepository;
+import com.productivityx.repository.PolicyVersionRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/policies")
+@RequiredArgsConstructor
 public class PolicyController {
 
-    // Todo: Implement M2 Policy Logic
-    
+    private final PolicyRepository policyRepository;
+    private final PolicyVersionRepository versionRepository;
+
     @GetMapping
-    public Map<String, Object> getPolicy() {
-        return Map.of(
-            "idleThresholdMinutes", 15,
-            "offTaskThresholdMinutes", 30,
-            "blacklistedSites", java.util.List.of("facebook.com", "twitter.com"),
-            "whitelistedApps", java.util.List.of()
-        );
+    public ResponseEntity<List<Policy>> listPolicies(@RequestParam(required = false) UUID organizationId) {
+        if (organizationId != null) {
+            return ResponseEntity.ok(policyRepository.findByOrganizationId(organizationId));
+        }
+        return ResponseEntity.ok(policyRepository.findAll());
+    }
+
+    @PostMapping
+    public ResponseEntity<Policy> createPolicy(@RequestBody Policy policy) {
+        policy.setCreatedAt(LocalDateTime.now());
+        policy.setUpdatedAt(LocalDateTime.now());
+        Policy saved = policyRepository.save(policy);
+        return ResponseEntity.ok(saved);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Policy> getPolicy(@PathVariable UUID id) {
+        return policyRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+    
+    // --- Versioning ---
+
+    @GetMapping("/{id}/versions")
+    public ResponseEntity<List<PolicyVersion>> listVersions(@PathVariable UUID id) {
+        return ResponseEntity.ok(versionRepository.findByPolicyIdOrderByVersionDesc(id));
+    }
+
+    @PostMapping("/{id}/versions")
+    public ResponseEntity<PolicyVersion> createVersion(@PathVariable UUID id, @RequestBody PolicyVersion version) {
+        return policyRepository.findById(id).map(policy -> {
+            // Calculate next version number
+            int nextVersion = versionRepository.findTopByPolicyIdOrderByVersionDesc(id)
+                    .map(v -> v.getVersion() + 1)
+                    .orElse(1);
+
+            version.setPolicy(policy);
+            version.setVersion(nextVersion);
+            version.setCreatedAt(LocalDateTime.now());
+            
+            return ResponseEntity.ok(versionRepository.save(version));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/{id}/publish/{versionId}")
+    public ResponseEntity<Policy> publishVersion(@PathVariable UUID id, @PathVariable UUID versionId) {
+        return policyRepository.findById(id).map(policy -> {
+             if (!versionRepository.existsById(versionId)) {
+                 return ResponseEntity.badRequest().build();
+             }
+             policy.setActiveVersionId(versionId);
+             policy.setUpdatedAt(LocalDateTime.now());
+             return ResponseEntity.ok(policyRepository.save(policy));
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

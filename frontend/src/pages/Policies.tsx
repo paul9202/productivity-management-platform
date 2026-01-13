@@ -1,45 +1,143 @@
+
 import React, { useEffect, useState } from 'react';
 import { useApi } from '../api';
-import { PolicySettings } from '../types';
+import { Policy } from '../types';
+import { Shield, Plus, Edit2, CheckCircle } from 'lucide-react';
 
 const Policies: React.FC = () => {
     const api = useApi();
-    const [policy, setPolicy] = useState<PolicySettings | null>(null);
+    const [policies, setPolicies] = useState<Policy[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    // const [selectedPolicy, setSelectedPolicy] = useState<Policy | null>(null); // TODO: for edit mode
+    const [policyFormData, setPolicyFormData] = useState({ name: '', description: '' });
 
     useEffect(() => {
-        api.getPolicies().then(setPolicy);
+        loadPolicies();
     }, []);
 
-    if (!policy) return <div className="page-container">Loading...</div>;
+    const loadPolicies = async () => {
+        setLoading(true);
+        try {
+            const data = await api.listPolicies();
+            setPolicies(data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCreateClick = () => {
+        // setSelectedPolicy(null);
+        setPolicyFormData({ name: '', description: '' });
+        setShowModal(true);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            await api.createPolicy({ ...policyFormData, organizationId: 'org1' }); // Default org
+            setShowModal(false);
+            loadPolicies();
+        } catch (err) {
+            alert('Failed to create policy');
+        }
+    };
+
+    if (loading) return <div className="page-container">Loading...</div>;
 
     return (
         <div className="page-container">
-            <h1>Global Policies</h1>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-                <div className="card">
-                    <h3>Productivity Thresholds</h3>
-                    <div style={{ marginTop: 16 }}>
-                        <label style={{ display: 'block', marginBottom: 8 }}>Idle Timeout (Minutes)</label>
-                        <input type="number" defaultValue={policy.idleThresholdMinutes} style={{ padding: 8, width: '100%', marginBottom: 16 }} />
-
-                        <label style={{ display: 'block', marginBottom: 8 }}>Off-Task Threshold (Minutes)</label>
-                        <input type="number" defaultValue={policy.offTaskThresholdMinutes} style={{ padding: 8, width: '100%' }} />
-                    </div>
+            <div className="flex-row space-between" style={{ marginBottom: 32 }}>
+                <div>
+                    <h1>Policy Center</h1>
+                    <div style={{ color: 'var(--text-muted)', marginTop: -4 }}>Manage security and productivity policies.</div>
                 </div>
-
-                <div className="card">
-                    <h3>App & Site Rules</h3>
-                    <div style={{ marginTop: 16 }}>
-                        <label style={{ display: 'block', marginBottom: 8 }}>Blocked Sites (Blacklist)</label>
-                        <textarea defaultValue={policy.blacklistedSites.join(', ')} style={{ width: '100%', height: 100, padding: 8 }} />
-                    </div>
-                </div>
-            </div>
-            <div style={{ marginTop: 24 }}>
-                <button style={{ padding: '12px 24px', backgroundColor: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: 4 }}>
-                    Save Policy Changes
+                <button className="btn-primary" onClick={handleCreateClick}>
+                    <Plus size={18} />
+                    Create Policy
                 </button>
             </div>
+
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                <table style={{ margin: 0 }}>
+                    <thead>
+                        <tr>
+                            <th>Policy Name</th>
+                            <th>Description</th>
+                            <th>Active Version</th>
+                            <th>Last Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {policies.map(policy => (
+                            <tr key={policy.id}>
+                                <td>
+                                    <div className="flex-row gap-sm">
+                                        <div style={{ padding: 8, background: '#f0fdf4', borderRadius: 8, color: '#16a34a' }}>
+                                            <Shield size={16} />
+                                        </div>
+                                        <span style={{ fontWeight: 500 }}>{policy.name}</span>
+                                    </div>
+                                </td>
+                                <td style={{ color: 'var(--text-muted)' }}>{policy.description}</td>
+                                <td>
+                                    {policy.activeVersionId ? (
+                                        <span className="badge badge-success">
+                                            <CheckCircle size={12} />
+                                            Active
+                                        </span>
+                                    ) : (
+                                        <span className="badge badge-neutral">Draft</span>
+                                    )}
+                                </td>
+                                <td>{new Date(policy.updatedAt).toLocaleDateString()}</td>
+                                <td>
+                                    <button className="btn-text" onClick={() => alert('Navigate to detail view (Coming Soon)')}>
+                                        <Edit2 size={16} />
+                                        Edit
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            <Modal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                title="Create New Policy"
+                size="md"
+            >
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label>Policy Name</label>
+                        <input
+                            type="text"
+                            className="input-field"
+                            value={policyFormData.name}
+                            onChange={e => setPolicyFormData({ ...policyFormData, name: e.target.value })}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Description</label>
+                        <textarea
+                            className="input-field"
+                            value={policyFormData.description}
+                            onChange={e => setPolicyFormData({ ...policyFormData, description: e.target.value })}
+                            rows={3}
+                        />
+                    </div>
+                    <div className="flex-row space-between" style={{ marginTop: 32 }}>
+                        <button type="button" className="btn-text" onClick={() => setShowModal(false)}>Cancel</button>
+                        <button type="submit" className="btn-primary">Create Policy</button>
+                    </div>
+                </form>
+            </Modal>
         </div>
     );
 };

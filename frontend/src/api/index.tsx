@@ -1,5 +1,5 @@
 import {
-    DashboardSummary, Department, Employee, AlertEvent, PolicySettings, Device, DeviceGroup
+    DashboardSummary, Department, Employee, AlertEvent, PolicySettings, Device, DeviceGroup, Policy, PolicyVersion
 } from '../types';
 import { LoginRequest, LoginResponse } from '../types/auth';
 import { MOCK_ALERTS, MOCK_DASHBOARD, MOCK_DEPARTMENTS, MOCK_EMPLOYEES, MOCK_POLICY } from '../mock/mockData';
@@ -33,6 +33,14 @@ export interface ApiClient {
     createDeviceGroup(group: Partial<DeviceGroup>): Promise<DeviceGroup>;
     updateDeviceGroup(id: string, group: Partial<DeviceGroup>): Promise<DeviceGroup>;
     deleteDeviceGroup(id: string): Promise<void>;
+
+    // Policies
+    listPolicies(): Promise<Policy[]>;
+    createPolicy(policy: Partial<Policy>): Promise<Policy>;
+    getPolicy(id: string): Promise<Policy>;
+    listPolicyVersions(policyId: string): Promise<PolicyVersion[]>;
+    createPolicyVersion(policyId: string, version: Partial<PolicyVersion>): Promise<PolicyVersion>;
+    publishPolicyVersion(policyId: string, versionId: string): Promise<Policy>;
 }
 
 class MockApiClient implements ApiClient {
@@ -58,6 +66,30 @@ class MockApiClient implements ApiClient {
     }
     async deleteDeviceGroup(_id: string): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, 300));
+    }
+
+    // Policy Mock
+    async listPolicies(): Promise<Policy[]> {
+        return new Promise(resolve => setTimeout(() => resolve([
+            { id: 'p1', name: 'Global Security', description: 'Default security policy', organizationId: 'org1', activeVersionId: 'v1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+        ]), 300));
+    }
+    async createPolicy(policy: Partial<Policy>): Promise<Policy> {
+        return new Promise(resolve => setTimeout(() => resolve({ ...policy, id: 'p-new', createdAt: new Date().toISOString() } as Policy), 300));
+    }
+    async getPolicy(id: string): Promise<Policy> {
+        return new Promise(resolve => setTimeout(() => resolve({ id, name: 'Mock Policy', description: 'Mock', organizationId: 'org1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }), 300));
+    }
+    async listPolicyVersions(_policyId: string): Promise<PolicyVersion[]> {
+        return new Promise(resolve => setTimeout(() => resolve([
+            { id: 'v1', policyId: _policyId, version: 1, configuration: '{}', createdAt: new Date().toISOString() }
+        ]), 300));
+    }
+    async createPolicyVersion(policyId: string, version: Partial<PolicyVersion>): Promise<PolicyVersion> {
+        return new Promise(resolve => setTimeout(() => resolve({ ...version, id: 'v-new', policyId, version: 2, createdAt: new Date().toISOString() } as PolicyVersion), 300));
+    }
+    async publishPolicyVersion(_policyId: string, _versionId: string): Promise<Policy> {
+        return this.getPolicy(_policyId);
     }
     async listDevices(): Promise<Device[]> {
         return new Promise(resolve => setTimeout(() => resolve([
@@ -275,6 +307,46 @@ class HttpApiClient implements ApiClient {
     async deleteDevice(id: string): Promise<void> {
         const res = await fetch(`/api/devices/${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Failed to delete device');
+    }
+
+    // Policies HTTP
+    async listPolicies(): Promise<Policy[]> {
+        const res = await fetch('/api/policies');
+        if (!res.ok) throw new Error('Failed to list policies');
+        return res.json();
+    }
+    async createPolicy(policy: Partial<Policy>): Promise<Policy> {
+        const res = await fetch('/api/policies', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(policy)
+        });
+        if (!res.ok) throw new Error('Failed to create policy');
+        return res.json();
+    }
+    async getPolicy(id: string): Promise<Policy> {
+        const res = await fetch(`/api/policies/${id}`);
+        if (!res.ok) throw new Error('Failed to get policy');
+        return res.json();
+    }
+    async listPolicyVersions(policyId: string): Promise<PolicyVersion[]> {
+        const res = await fetch(`/api/policies/${policyId}/versions`);
+        if (!res.ok) throw new Error('Failed to list versions');
+        return res.json();
+    }
+    async createPolicyVersion(policyId: string, version: Partial<PolicyVersion>): Promise<PolicyVersion> {
+        const res = await fetch(`/api/policies/${policyId}/versions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(version)
+        });
+        if (!res.ok) throw new Error('Failed to create version');
+        return res.json();
+    }
+    async publishPolicyVersion(policyId: string, versionId: string): Promise<Policy> {
+        const res = await fetch(`/api/policies/${policyId}/publish/${versionId}`, { method: 'POST' });
+        if (!res.ok) throw new Error('Failed to publish version');
+        return res.json();
     }
 }
 
