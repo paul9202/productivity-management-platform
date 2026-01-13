@@ -1,205 +1,166 @@
 package com.productivityx.service;
 
-import com.productivityx.dto.TelemetryBatchRequest;
-import com.productivityx.dto.TelemetryResponse;
+import com.productivityx.dto.ingest.IngestBatchDTO;
 import com.productivityx.model.Device;
-import com.productivityx.model.TelemetryEvent;
-import com.productivityx.repository.DeviceRepository;
-import com.productivityx.repository.TelemetryEventRepository;
+import com.productivityx.model.telemetry.*;
+import com.productivityx.repository.*;
+import com.productivityx.repository.telemetry.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.productivityx.dto.telemetry.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class TelemetryService {
 
-    private final TelemetryEventRepository telemetryRepository;
     private final DeviceRepository deviceRepository;
+    private final ActivityBucketRepository activityBucketRepository;
+    private final AppUsageEventRepository appUsageEventRepository;
+    private final WebUsageEventRepository webUsageEventRepository;
+    private final FileEventRepository fileEventRepository;
+    private final BlockEventRepository blockEventRepository;
+    private final DeviceHeartbeatRepository deviceHeartbeatRepository;
 
     @Transactional
-    public TelemetryResponse ingestBatch(String deviceId, List<TelemetryBatchRequest> batch) {
-        int accepted = 0;
-        int duplicates = 0;
-        int rejected = 0;
-        List<String> errors = new ArrayList<>();
+    public IngestResponse processIngestBatch(String deviceIdStr, IngestBatchDTO batch) {
+        Device device = deviceRepository.findById(deviceIdStr)
+                .orElseThrow(() -> new RuntimeException("Device not found: " + deviceIdStr));
 
-        // Ensure device is registered or auto-register (for MVP auto-register)
-        ensureDeviceRegistered(deviceId);
+        UUID tenantId = device.getTenantId();
+        UUID orgId = device.getOrgId();
+        if (orgId == null) orgId = UUID.fromString("d1111111-1111-1111-1111-111111111111"); // Fallback
 
-        for (TelemetryBatchRequest item : batch) {
-            try {
-                // Check if exists first to avoid exception overhead if possible, 
-                // but for true concurrency/atomic, saving and catching constraint violation is safer.
-                // However, composite key check is fast.
-                /* 
-                   We will try to save. If it fails due to unique constraint, we count as duplicate.
-                */
-                TelemetryEvent event = new TelemetryEvent();
-                event.setDeviceId(deviceId);
-                event.setEventId(item.getEventId());
-                event.setTimestamp(item.getTimestamp().toLocalDateTime()); // Convert Offset to Local (strips offset, assuming UTC)
-                event.setFocusScore(item.getFocusScore());
-                event.setAwaySeconds(item.getAwaySeconds());
-                event.setIdleSeconds(item.getIdleSeconds());
-                // Serialize appDurations to JSON if needed, or store simply. 
-                // For MVP, we'll just set it to null or perform simple toString if necessary for data field.
-                event.setData(item.getAppDurations() != null ? item.getAppDurations().toString() : "{}");
+        IngestResponse response = new IngestResponse();
+        UUID batchId = UUID.randomUUID();
 
-                if (telemetryRepository.existsById(new com.productivityx.model.TelemetryEventId(deviceId, item.getEventId()))) {
-                    duplicates++;
+        // 1. Process Heartbeat & Update Device
+        if (batch.getHeartbeat() != null) {
+            updateDeviceStatus(device, batch.getHeartbeat());
+            
+            DeviceHeartbeat hb = new DeviceHeartbeat();
+            hb.setId(UUID.randomUUID()); 
+            hb.setTenantId(tenantId);
+            hb.setOrgId(orgId);
+            hb.setDeviceId(device.getDeviceId());
+            hb.setTs(LocalDateTime.now());
+            hb.setStatus(batch.getHeartbeat().getStatus());
+            hb.setAgentVersion(batch.getHeartbeat().getAgentVersion());
+            hb.setQueueDepth(batch.getHeartbeat().getQueueDepth());
+            hb.setUploadErrorCount(batch.getHeartbeat().getUploadErrorCount());
+            hb.setIngestBatchId(batchId);
+            deviceHeartbeatRepository.save(hb);
+        } else {
+             // Implicit "Online" if sending events? Or just update last seen
+             device.setLastSeenAt(LocalDateTime.now());
+             device.setLastUploadAt(LocalDateTime.now());
+             device.setStatus("ONLINE"); // Infer online
+             deviceRepository.save(device);
+        }
+
+        // 2. Process Activity Buckets
+        if (batch.getActivity_buckets() != null) {
+            for (IngestBatchDTO.BucketPayload b : batch.getActivity_buckets()) {
+                LocalDateTime start = parseIso(b.getBucket_start());
+                // Idempotency check handled by DB Constraint (Unique device, time, minutes)
+                // We use ON CONFLICT DO NOTHING (via separate native query or try-catch if JPA)
+                // For simplicity in JPA: Check existence first or handle exception? 
+                // Best practice for bulk is usually native SQL or JDBC batch. 
+                // Given the requirement "INSERT ON CONFLICT DO NOTHING", let's try to save and check existence.
+                
+                boolean exists = activityBucketRepository.existsByDeviceIdAndBucketStartAndBucketMinutes(
+                        device.getDeviceId(), start, b.getBucket_minutes());
+                
+                if (!exists) {
+                    ActivityBucket bucket = new ActivityBucket();
+                    bucket.setId(UUID.randomUUID());
+                    bucket.setTenantId(tenantId);
+                    bucket.setOrgId(orgId);
+                    bucket.setDeviceId(device.getDeviceId());
+                    bucket.setBucketStart(start);
+                    bucket.setBucketMinutes(b.getBucket_minutes());
+                    bucket.setActiveSeconds(b.getActive_seconds());
+                    bucket.setIdleSeconds(b.getIdle_seconds());
+                    bucket.setAvgFocusScore(b.getAvg_focus_score());
+                    bucket.setIngestBatchId(batchId);
+                    activityBucketRepository.save(bucket);
+                    response.incrementProcessed("buckets");
                 } else {
-                    telemetryRepository.save(event);
-                    accepted++;
+                    response.incrementRejected("buckets");
                 }
-
-            } catch (Exception e) {
-                log.error("Error ingesting event {}", item.getEventId(), e);
-                rejected++;
-                errors.add("Event " + item.getEventId() + ": " + e.getMessage());
             }
         }
 
-        return TelemetryResponse.builder()
-                .accepted(accepted)
-                .duplicates(duplicates)
-                .rejected(rejected)
-                .errors(errors)
-                .build();
-    }
-
-    private void ensureDeviceRegistered(String deviceId) {
-        if (!deviceRepository.existsById(deviceId)) {
-            Device device = new Device();
-            // In V3 Schema device_id is a VARCHAR, so we can use the string directly
-            device.setDeviceId(deviceId); 
-            device.setName("Auto-Registered Device"); // Required field
-            device.setStatus("ACTIVE");
-            device.setEnrolledAt(LocalDateTime.now());
-            device.setLastSeenAt(LocalDateTime.now());
-            // Tenant/Group would need assignment logic, setting null or defaults for now
-            deviceRepository.save(device);
-        } else {
-            // Update last seen
-            deviceRepository.findById(deviceId).ifPresent(d -> {
-                d.setLastSeenAt(LocalDateTime.now());
-                deviceRepository.save(d);
-            });
+        // 3. Process Events (App)
+        if (batch.getApp_events() != null) {
+            for (IngestBatchDTO.AppPayload e : batch.getApp_events()) {
+                if (appUsageEventRepository.existsById(e.getId())) {
+                    response.incrementRejected("app_events");
+                    continue;
+                }
+                AppUsageEvent evt = new AppUsageEvent();
+                evt.setId(e.getId());
+                evt.setTenantId(tenantId);
+                evt.setOrgId(orgId);
+                evt.setDeviceId(device.getDeviceId());
+                evt.setTsStart(parseIso(e.getTs_start()));
+                evt.setTsEnd(parseIso(e.getTs_end()));
+                evt.setAppName(e.getApp_name());
+                evt.setProcessName(e.getProcess_name());
+                evt.setIngestBatchId(batchId);
+                appUsageEventRepository.save(evt);
+                response.incrementProcessed("app_events");
+            }
         }
-    }
-    public List<TelemetryEvent> getEvents(String deviceId, int page, int size) {
-        return telemetryRepository.findByDeviceIdOrderByTimestampDesc(deviceId, org.springframework.data.domain.PageRequest.of(page, size)).getContent();
+
+        // 4. Process Events (Web)
+        if (batch.getWeb_events() != null) {
+            for (IngestBatchDTO.WebPayload e : batch.getWeb_events()) {
+                if (webUsageEventRepository.existsById(e.getId())) {
+                    response.incrementRejected("web_events");
+                    continue;
+                }
+                WebUsageEvent evt = new WebUsageEvent();
+                evt.setId(e.getId());
+                evt.setTenantId(tenantId);
+                evt.setOrgId(orgId);
+                evt.setDeviceId(device.getDeviceId());
+                evt.setTsStart(parseIso(e.getTs_start()));
+                evt.setTsEnd(parseIso(e.getTs_end()));
+                evt.setDomain(e.getDomain());
+                evt.setIngestBatchId(batchId);
+                webUsageEventRepository.save(evt);
+                response.incrementProcessed("web_events");
+            }
+        }
+
+        return response;
     }
 
-    // --- MOCK IMPLEMENTATION FOR ADVANCED TELEMETRY ---
+    private void updateDeviceStatus(Device device, IngestBatchDTO.HeartbeatPayload hb) {
+        device.setLastSeenAt(LocalDateTime.now());
+        device.setLastUploadAt(LocalDateTime.now());
+        device.setStatus("ONLINE"); // Heartbeat implies online
+        device.setAgentVersion(hb.getAgentVersion());
+        // device.setQueueDepth(hb.getQueueDepth()); // If we had this col on Device
+        deviceRepository.save(device);
+    }
     
-    public TelemetrySummaryDTO getSummary(String deviceId, String from, String to) {
-        List<TimelineBucketDTO> buckets = getTimeline(deviceId, from, to); // Regenerates data for consistency
-        long totalActive = buckets.stream().mapToLong(TimelineBucketDTO::getActiveSeconds).sum();
-        long totalIdle = buckets.stream().mapToLong(TimelineBucketDTO::getIdleSeconds).sum();
-        long totalLocked = buckets.stream().mapToLong(TimelineBucketDTO::getLockedSeconds).sum();
-
-        // Simple aggregation logic
-        List<TelemetrySummaryDTO.TopItemDTO> topApps = new ArrayList<>();
-        topApps.add(TelemetrySummaryDTO.TopItemDTO.builder().name("VS Code").durationSeconds(totalActive / 2).category("Dev").build());
-        topApps.add(TelemetrySummaryDTO.TopItemDTO.builder().name("Chrome").durationSeconds(totalActive / 3).category("Web").build());
-
-        return TelemetrySummaryDTO.builder()
-                .deviceId(deviceId)
-                .userId("mock-user")
-                .from(from != null ? from : LocalDateTime.now().minusHours(24).toString())
-                .to(to != null ? to : LocalDateTime.now().toString())
-                .totalActiveSeconds(totalActive)
-                .totalIdleSeconds(totalIdle)
-                .totalLockedSeconds(totalLocked)
-                .productivityScore(75)
-                .riskScore(20)
-                .riskCounters(TelemetrySummaryDTO.RiskCountersDTO.builder()
-                        .blocks(2).usbEvents(1).sensitiveKeywords(0).anomalies(1).build())
-                .topApps(topApps)
-                .topDomains(List.of())
-                .status(TelemetrySummaryDTO.StatusDTO.builder()
-                        .online(true)
-                        .lastSeenAt(LocalDateTime.now().toString())
-                        .agentVersion("1.0.0")
-                        .policyVersion("v1")
-                        .build())
-                .build();
-    }
-
-    public List<TimelineBucketDTO> getTimeline(String deviceId, String from, String to) {
-        // Generate 24h of buckets
-        List<TimelineBucketDTO> buckets = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime start = now.minusHours(24);
-        
-        LocalDateTime cursor = start;
-        Random rand = new Random();
-        
-        while (cursor.isBefore(now)) {
-            int active = rand.nextInt(300);
-            int idle = rand.nextInt(300 - active);
-            int locked = 300 - active - idle;
-            
-            buckets.add(TimelineBucketDTO.builder()
-                    .startTime(cursor.toString())
-                    .endTime(cursor.plusMinutes(5).toString())
-                    .activeSeconds(active)
-                    .idleSeconds(idle)
-                    .lockedSeconds(locked)
-                    .topApp(active > 150 ? "VS Code" : "Chrome")
-                    .topDomain("google.com")
-                    .eventCounts(Map.of("block", 0, "file", 0))
-                    .build());
-            
-            cursor = cursor.plusMinutes(5);
+    private LocalDateTime parseIso(String iso) {
+        if (iso == null) return LocalDateTime.now();
+        // Assuming Input is UTC ISO
+        try {
+            return LocalDateTime.ofInstant(Instant.parse(iso), ZoneId.of("UTC"));
+        } catch (Exception e) {
+            log.error("Failed to parse date: " + iso);
+            return LocalDateTime.now();
         }
-        return buckets;
-    }
-
-    public List<AdvancedTelemetryEventDTO> getAdvancedEvents(String deviceId, String type, String from, String to) {
-        List<AdvancedTelemetryEventDTO> events = new ArrayList<>();
-        // Generate some sample events
-        events.add(AdvancedTelemetryEventDTO.builder()
-                .id(UUID.randomUUID().toString())
-                .deviceId(deviceId)
-                .userId("user-1")
-                .timestamp(LocalDateTime.now().minusMinutes(10).toString())
-                .type("APP")
-                .metadata(Map.of("appName", "VS Code", "durationSeconds", 600, "category", "Dev"))
-                .build());
-                
-        events.add(AdvancedTelemetryEventDTO.builder()
-                .id(UUID.randomUUID().toString())
-                .deviceId(deviceId)
-                .userId("user-1")
-                .timestamp(LocalDateTime.now().minusMinutes(25).toString())
-                .type("WEB")
-                .metadata(Map.of("domain", "github.com", "url", "https://github.com", "category", "Dev", "title", "GitHub"))
-                .build());
-
-         if ("FILE".equals(type) || type == null) {
-            events.add(AdvancedTelemetryEventDTO.builder()
-                .id(UUID.randomUUID().toString())
-                .deviceId(deviceId)
-                .userId("user-1")
-                .timestamp(LocalDateTime.now().minusMinutes(45).toString())
-                .type("FILE")
-                .metadata(Map.of("operation", "COPY", "filePath", "E:\\data.zip", "isUsb", true, "fileSize", 102400))
-                .build());
-         }
-
-        if (type != null) {
-            return events.stream().filter(e -> e.getType().equals(type)).collect(Collectors.toList());
-        }
-        return events;
     }
 }
