@@ -81,9 +81,21 @@ class HttpApiClient implements ApiClient {
         return res.json();
     }
     async listEmployees(filter?: { deptId?: string }): Promise<Employee[]> {
-        // Query params could be added here
-        const res = await fetch('/api/employees');
-        return res.json();
+        const res = await fetch('/api/users');
+        const users = await res.json();
+        // Map User entity to Employee interface
+        // note: Backend User has 'departmentId' (UUID), Frontend Employee expects 'departmentId' (string)
+        // Backend User has 'status' (string), Frontend Employee expects 'status'
+        return users.map((u: any) => ({
+            id: u.id,
+            name: u.name,
+            role: u.role,
+            email: u.email,
+            departmentId: u.departmentId,
+            status: u.status || 'ACTIVE',
+            lastActive: new Date().toISOString(), // Mock for now
+            productivityScore: 85 // Mock for now
+        }));
     }
     async listAlerts(): Promise<AlertEvent[]> {
         const res = await fetch('/api/alerts');

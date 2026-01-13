@@ -1,25 +1,28 @@
 package com.productivityx.controller;
 
-import com.productivityx.model.Department; // Assuming Department model exists or using generic map
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.productivityx.model.Department;
+import com.productivityx.repository.DepartmentRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/departments")
+@RequiredArgsConstructor
 public class DepartmentController {
-    
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+
+    private final DepartmentRepository deptRepository;
 
     @GetMapping
-    public List<Map<String, Object>> listDepartments() {
-        // Simple query to avoid creating full Entity for read-only V1 table
-        return jdbcTemplate.queryForList("SELECT id, name, 'Unknown Manager' as managerName, 10 as memberCount FROM departments");
+    public ResponseEntity<List<Department>> listDepartments() {
+        // In a real app we'd fetch member count and manager name via JOIN or separate queries
+        return ResponseEntity.ok(deptRepository.findAll());
+    }
+
+    @PostMapping
+    public ResponseEntity<Department> createDepartment(@RequestBody Department dept) {
+        return ResponseEntity.ok(deptRepository.save(dept));
     }
 }

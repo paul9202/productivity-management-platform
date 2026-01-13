@@ -18,4 +18,9 @@ public class User {
     private UUID tenantId;
     private String name;
     private String email;
+    
+    @jakarta.persistence.Column(name = "department_id")
+    private UUID departmentId;
+    
+    private String status; // ACTIVE, INACTIVE, etc.
 }
