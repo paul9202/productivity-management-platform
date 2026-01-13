@@ -19,6 +19,8 @@ public class PolicyController {
 
     private final PolicyRepository policyRepository;
     private final PolicyVersionRepository versionRepository;
+    private final com.productivityx.repository.PolicyTargetRepository targetRepository;
+    private final com.productivityx.repository.PolicyAckRepository ackRepository;
 
     @GetMapping
     public ResponseEntity<List<Policy>> listPolicies(@RequestParam(required = false) UUID organizationId) {
@@ -44,7 +46,12 @@ public class PolicyController {
     }
 
     @DeleteMapping("/{id}")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<Void> deletePolicy(@PathVariable UUID id) {
+        // Cascade delete manually (because of FK constraints)
+        targetRepository.deleteByPolicyId(id);
+        ackRepository.deleteByPolicyId(id);
+        versionRepository.deleteByPolicyId(id);
         policyRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }

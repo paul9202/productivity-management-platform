@@ -12,4 +12,5 @@ import java.util.UUID;
 public interface PolicyVersionRepository extends JpaRepository<PolicyVersion, UUID> {
     List<PolicyVersion> findByPolicyIdOrderByVersionDesc(UUID policyId);
     Optional<PolicyVersion> findTopByPolicyIdOrderByVersionDesc(UUID policyId);
+    void deleteByPolicyId(UUID policyId);
 }
