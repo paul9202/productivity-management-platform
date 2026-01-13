@@ -70,7 +70,7 @@ public class PolicyController {
     public ResponseEntity<Policy> publishVersion(@PathVariable UUID id, @PathVariable UUID versionId) {
         return policyRepository.findById(id).map(policy -> {
              if (!versionRepository.existsById(versionId)) {
-                 return ResponseEntity.badRequest().build();
+                 return ResponseEntity.badRequest().<Policy>build();
              }
              policy.setActiveVersionId(versionId);
              policy.setUpdatedAt(LocalDateTime.now());

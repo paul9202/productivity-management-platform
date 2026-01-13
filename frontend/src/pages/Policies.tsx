@@ -1,16 +1,23 @@
-
 import React, { useEffect, useState } from 'react';
 import { useApi } from '../api';
-import { Policy } from '../types';
-import { Shield, Plus, Edit2, CheckCircle } from 'lucide-react';
+import { Policy, PolicyVersion } from '../types';
+import { Shield, Plus, Edit2, CheckCircle, ArrowLeft } from 'lucide-react';
+import PolicyEditor from '../components/PolicyEditor';
+import { Modal } from '../components/Modal';
 
 const Policies: React.FC = () => {
     const api = useApi();
     const [policies, setPolicies] = useState<Policy[]>([]);
     const [loading, setLoading] = useState(true);
-    const [showModal, setShowModal] = useState(false);
-    // const [selectedPolicy, setSelectedPolicy] = useState<Policy | null>(null); // TODO: for edit mode
-    const [policyFormData, setPolicyFormData] = useState({ name: '', description: '' });
+
+    // Create Modal State
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [newPolicyData, setNewPolicyData] = useState({ name: '', description: '' });
+
+    // Editor State
+    const [isEditing, setIsEditing] = useState(false);
+    const [selectedPolicy, setSelectedPolicy] = useState<Policy | null>(null);
+    const [draftVersion, setDraftVersion] = useState<PolicyVersion | undefined>(undefined);
 
     useEffect(() => {
         loadPolicies();
@@ -29,23 +36,77 @@ const Policies: React.FC = () => {
     };
 
     const handleCreateClick = () => {
-        // setSelectedPolicy(null);
-        setPolicyFormData({ name: '', description: '' });
-        setShowModal(true);
+        setNewPolicyData({ name: '', description: '' });
+        setShowCreateModal(true);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleCreateSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await api.createPolicy({ ...policyFormData, organizationId: 'org1' }); // Default org
-            setShowModal(false);
+            const created = await api.createPolicy({ ...newPolicyData, organizationId: 'org1' });
+            setShowCreateModal(false);
             loadPolicies();
+            // Optional: Auto-open editor
+            handleEditClick(created);
         } catch (err) {
             alert('Failed to create policy');
         }
     };
 
-    if (loading) return <div className="page-container">Loading...</div>;
+    const handleEditClick = async (policy: Policy) => {
+        setLoading(true);
+        try {
+            let version: PolicyVersion | undefined;
+            if (policy.activeVersionId) {
+                const versions = await api.listPolicyVersions(policy.id);
+                // Find active or just take most recent? Let's take most recent for editing
+                if (versions.length > 0) {
+                    version = versions[0];
+                }
+            }
+            setSelectedPolicy(policy);
+            setDraftVersion(version);
+            setIsEditing(true);
+        } catch (e) {
+            console.error(e);
+            alert('Failed to load policy details');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEditorSave = () => {
+        setIsEditing(false);
+        setSelectedPolicy(null);
+        setDraftVersion(undefined);
+        loadPolicies();
+    };
+
+    const handleEditorCancel = () => {
+        setIsEditing(false);
+        setSelectedPolicy(null);
+        setDraftVersion(undefined);
+    };
+
+    if (loading && !isEditing) return <div className="page-container">Loading...</div>;
+
+    if (isEditing && selectedPolicy) {
+        return (
+            <div className="page-container">
+                <button className="btn-text" onClick={handleEditorCancel} style={{ marginBottom: 16 }}>
+                    <ArrowLeft size={16} /> Back to Policies
+                </button>
+                <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                    <PolicyEditor
+                        policy={selectedPolicy}
+                        initialVersion={draftVersion}
+                        onSave={handleEditorSave}
+                        onCancel={handleEditorCancel}
+                    />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="page-container">
@@ -95,7 +156,7 @@ const Policies: React.FC = () => {
                                 </td>
                                 <td>{new Date(policy.updatedAt).toLocaleDateString()}</td>
                                 <td>
-                                    <button className="btn-text" onClick={() => alert('Navigate to detail view (Coming Soon)')}>
+                                    <button className="btn-text" onClick={() => handleEditClick(policy)}>
                                         <Edit2 size={16} />
                                         Edit
                                     </button>
@@ -107,19 +168,19 @@ const Policies: React.FC = () => {
             </div>
 
             <Modal
-                isOpen={showModal}
-                onClose={() => setShowModal(false)}
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
                 title="Create New Policy"
                 size="md"
             >
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleCreateSubmit}>
                     <div className="form-group">
                         <label>Policy Name</label>
                         <input
                             type="text"
                             className="input-field"
-                            value={policyFormData.name}
-                            onChange={e => setPolicyFormData({ ...policyFormData, name: e.target.value })}
+                            value={newPolicyData.name}
+                            onChange={e => setNewPolicyData({ ...newPolicyData, name: e.target.value })}
                             required
                         />
                     </div>
@@ -127,13 +188,13 @@ const Policies: React.FC = () => {
                         <label>Description</label>
                         <textarea
                             className="input-field"
-                            value={policyFormData.description}
-                            onChange={e => setPolicyFormData({ ...policyFormData, description: e.target.value })}
+                            value={newPolicyData.description}
+                            onChange={e => setNewPolicyData({ ...newPolicyData, description: e.target.value })}
                             rows={3}
                         />
                     </div>
                     <div className="flex-row space-between" style={{ marginTop: 32 }}>
-                        <button type="button" className="btn-text" onClick={() => setShowModal(false)}>Cancel</button>
+                        <button type="button" className="btn-text" onClick={() => setShowCreateModal(false)}>Cancel</button>
                         <button type="submit" className="btn-primary">Create Policy</button>
                     </div>
                 </form>
