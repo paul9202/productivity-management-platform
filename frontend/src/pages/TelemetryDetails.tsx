@@ -59,7 +59,7 @@ const TelemetryDetails: React.FC = () => {
                 topApps: sum.topApps,
                 topDomains: sum.topDomains,
                 workHoursConfig: { start: 9, end: 18 },
-                health: { queueDepth: 120, lastUploadAt: new Date().toISOString(), policyVersion: sum.status.policyVersion || 'v1' }
+                health: { queueDepth: 120, lastUploadAt: new Date().toISOString(), policyVersion: sum.status?.policyVersion || 'v1' }
             };
             const generatedInsights = engine.evaluateAll(ctx);
             setInsights(generatedInsights);

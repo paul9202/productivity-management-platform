@@ -61,7 +61,7 @@ export const ExecutiveSummary: React.FC<Props> = ({ summary, insights, managerSn
     const riskCount = insights.filter(i => i.category === 'RISK').length; // Use calculated insights, not just raw counters
 
     // Status Logic
-    const isOnline = summary.status.online;
+    const isOnline = summary.status?.online;
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -105,7 +105,7 @@ export const ExecutiveSummary: React.FC<Props> = ({ summary, insights, managerSn
                 <KPICard
                     title="Device Status"
                     value={isOnline ? 'Online' : 'Offline'}
-                    subtext={`Last seen: ${new Date(summary.status.lastSeenAt).toLocaleTimeString()}`}
+                    subtext={`Last seen: ${summary.status?.lastSeenAt ? new Date(summary.status.lastSeenAt).toLocaleTimeString() : 'N/A'}`}
                     status={isOnline ? 'success' : 'neutral'}
                     icon={isOnline ? <Wifi size={20} style={{ color: '#16a34a' }} /> : <WifiOff size={20} />}
                 />

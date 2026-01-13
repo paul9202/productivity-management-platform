@@ -26,7 +26,7 @@ export const DeepDiveTabs: React.FC<Props> = ({ events, loading }) => {
 
     // Apply text filter
     const displayEvents = filteredEvents.filter(e =>
-        JSON.stringify(e.metadata).toLowerCase().includes(filter.toLowerCase())
+        e.metadata ? JSON.stringify(e.metadata).toLowerCase().includes(filter.toLowerCase()) : false
     );
 
     const TabButton = ({ id, label, icon: Icon }: any) => (
