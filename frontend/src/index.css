@@ -233,7 +233,7 @@ textarea.input-field {
     backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
-    justifyContent: center;
+    justify-content: center;
     z-index: 1000;
     opacity: 0;
     transition: opacity 0.3s ease;
