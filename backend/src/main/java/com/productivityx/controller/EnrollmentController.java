@@ -65,8 +65,19 @@ public class EnrollmentController {
 
         // Update fields
         device.setName(request.getHostname());
-        device.setTenantId(token.getScopeTenantId());
-        device.setGroupId(token.getScopeGroupId() != null ? token.getScopeGroupId() : UUID.fromString("00000000-0000-0000-0000-000000000000")); // Fallback or null
+        // Sanitize Tenant ID (Fix for legacy/broken mock tokens)
+        UUID effectiveTenantId = token.getScopeTenantId();
+        if (effectiveTenantId.equals(UUID.fromString("00000000-0000-0000-0000-000000000000"))) {
+            effectiveTenantId = UUID.fromString("10000000-0000-0000-0000-000000000001"); // Default to Acme Corp
+        }
+        device.setTenantId(effectiveTenantId);
+
+        // Handle Group ID (Optional)
+        UUID effectiveGroupId = token.getScopeGroupId();
+        if (effectiveGroupId != null && effectiveGroupId.equals(UUID.fromString("00000000-0000-0000-0000-000000000000"))) {
+             effectiveGroupId = null; // Reset invalid group
+        }
+        device.setGroupId(effectiveGroupId);
         device.setAgentVersion(request.getAgentVersion());
         device.setLastSeenAt(LocalDateTime.now());
         device.setStatus("ONLINE");
