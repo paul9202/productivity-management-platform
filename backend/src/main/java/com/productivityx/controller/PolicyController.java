@@ -11,6 +11,11 @@ public class PolicyController {
     
     @GetMapping
     public Map<String, Object> getPolicy() {
-        return Map.of(); // Return empty object for now to satisfy frontend contract
+        return Map.of(
+            "idleThresholdMinutes", 15,
+            "offTaskThresholdMinutes", 30,
+            "blacklistedSites", java.util.List.of("facebook.com", "twitter.com"),
+            "whitelistedApps", java.util.List.of()
+        );
     }
 }
