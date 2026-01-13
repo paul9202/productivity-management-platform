@@ -9,6 +9,7 @@ import Departments from './pages/Departments';
 import Alerts from './pages/Alerts';
 import Policies from './pages/Policies';
 import Enrollment from './pages/Enrollment';
+import TelemetryDetails from './pages/TelemetryDetails';
 import Login from './pages/Login';
 import { ApiProvider } from './api';
 import { AuthProvider } from './context/AuthContext';
@@ -45,6 +46,7 @@ const App: React.FC = () => {
                             <Route path="/" element={<Layout />}>
                                 <Route path="policies" element={<Policies />} />
                                 <Route path="enrollment" element={<Enrollment />} />
+                                <Route path="devices/:deviceId/telemetry" element={<TelemetryDetails />} />
                             </Route>
                         </Route>
 

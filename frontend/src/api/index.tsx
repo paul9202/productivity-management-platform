@@ -1,6 +1,8 @@
 import {
     DashboardSummary, Department, Employee, AlertEvent, PolicySettings, Device, DeviceGroup, Policy, PolicyVersion, PolicyAck, EnrollmentToken, TelemetryEvent
 } from '../types';
+import { TelemetrySummary, TimelineBucket, TelemetryEvent as AdvancedTelemetryEvent } from '../types/telemetry';
+import { getMockTelemetrySummary, getMockTimeline, getMockEvents } from './mock/telemetryData';
 import { LoginRequest, LoginResponse } from '../types/auth';
 import { MOCK_ALERTS, MOCK_DASHBOARD, MOCK_DEPARTMENTS, MOCK_EMPLOYEES, MOCK_POLICY } from '../mock/mockData';
 import React, { createContext, useContext } from 'react';
@@ -27,6 +29,12 @@ export interface ApiClient {
     // Devices
     listDevices(): Promise<Device[]>;
     getDeviceTelemetry(deviceId: string): Promise<TelemetryEvent[]>;
+
+    // M5: Advanced Telemetry
+    getTelemetrySummary(deviceId: string, from?: string, to?: string): Promise<TelemetrySummary>;
+    getTelemetryTimeline(deviceId: string, from?: string, to?: string): Promise<TimelineBucket[]>;
+    getTelemetryEvents(deviceId: string, type?: string, from?: string, to?: string): Promise<AdvancedTelemetryEvent[]>;
+
     updateDevice(id: string, device: Partial<Device>): Promise<Device>;
     deleteDevice(id: string): Promise<void>;
 
@@ -133,10 +141,20 @@ class MockApiClient implements ApiClient {
         ]), 300));
     }
     async getDeviceTelemetry(_id: string): Promise<TelemetryEvent[]> {
+        // Legacy simple telemetry
         return new Promise(resolve => setTimeout(() => resolve([
-            { eventId: 'e1', deviceId: _id, timestamp: new Date().toISOString(), focusScore: 0.85, awaySeconds: 0, idleSeconds: 0, data: '{}' },
-            { eventId: 'e2', deviceId: _id, timestamp: new Date(Date.now() - 5000).toISOString(), focusScore: 0.92, awaySeconds: 0, idleSeconds: 0, data: '{}' }
+            { eventId: 'e1', deviceId: _id, timestamp: new Date().toISOString(), focusScore: 0.85, awaySeconds: 0, idleSeconds: 0, data: '{}', type: 'APP', metadata: {} } as any
         ]), 300));
+    }
+
+    async getTelemetrySummary(deviceId: string): Promise<TelemetrySummary> {
+        return getMockTelemetrySummary(deviceId);
+    }
+    async getTelemetryTimeline(deviceId: string): Promise<TimelineBucket[]> {
+        return getMockTimeline(deviceId);
+    }
+    async getTelemetryEvents(deviceId: string, type?: string): Promise<AdvancedTelemetryEvent[]> {
+        return getMockEvents(deviceId, type as any);
     }
     async updateDevice(id: string, device: Partial<Device>): Promise<Device> {
         return new Promise(resolve => setTimeout(() => resolve({
@@ -349,6 +367,31 @@ class HttpApiClient implements ApiClient {
         const res = await fetch(`/api/telemetry/device/${deviceId}`);
         if (!res.ok) throw new Error('Failed to fetch telemetry');
         return res.json();
+    }
+    async getTelemetrySummary(deviceId: string, from?: string, to?: string): Promise<TelemetrySummary> {
+        const params = new URLSearchParams();
+        if (from) params.append('from', from);
+        if (to) params.append('to', to);
+        const res = await fetch(`/api/telemetry/summary?deviceId=${deviceId}&${params.toString()}`);
+        if (!res.ok) throw new Error('Failed to fetch summary');
+        return res.json();
+    }
+    async getTelemetryTimeline(deviceId: string, from?: string, to?: string): Promise<TimelineBucket[]> {
+        const params = new URLSearchParams();
+        if (from) params.append('from', from);
+        if (to) params.append('to', to);
+        const res = await fetch(`/api/telemetry/timeline?deviceId=${deviceId}&${params.toString()}`);
+        if (!res.ok) throw new Error('Failed to fetch timeline');
+        return res.json();
+    }
+    async getTelemetryEvents(deviceId: string, type?: string, from?: string, to?: string): Promise<AdvancedTelemetryEvent[]> {
+        const params = new URLSearchParams();
+        if (type) params.append('type', type);
+        if (from) params.append('from', from);
+        if (to) params.append('to', to);
+        const res = await fetch(`/api/telemetry/events?deviceId=${deviceId}&${params.toString()}`);
+        if (!res.ok) throw new Error('Failed to fetch events');
+        return res.json() as Promise<AdvancedTelemetryEvent[]>;
     }
     async deleteDevice(id: string): Promise<void> {
         const res = await fetch(`/api/devices/${id}`, { method: 'DELETE' });
