@@ -204,6 +204,7 @@ const Enrollment: React.FC = () => {
                                 {groups.map(g => (
                                     <option key={g.id} value={g.id}>{g.name}</option>
                                 ))}
+                                {groups.length === 0 && <option disabled>No groups available (Create in 'Groups' page)</option>}
                             </select>
                         </div>
 
