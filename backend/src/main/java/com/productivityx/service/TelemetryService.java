@@ -141,6 +141,30 @@ public class TelemetryService {
             }
         }
 
+        // 5. Process Events (File)
+        if (batch.getFile_events() != null) {
+            for (IngestBatchDTO.FilePayload e : batch.getFile_events()) {
+                if (fileEventRepository.existsById(e.getId())) {
+                    response.incrementRejected("file_events");
+                    continue;
+                }
+                FileEvent evt = new FileEvent();
+                evt.setId(e.getId());
+                evt.setTenantId(tenantId);
+                evt.setOrgId(orgId);
+                evt.setDeviceId(device.getDeviceId());
+                evt.setTs(parseIso(e.getTimestamp()));
+                evt.setOperation(e.getOperation());
+                // Simple parsing for now
+                evt.setFileExt(e.getFile_name().contains(".") ? e.getFile_name().substring(e.getFile_name().lastIndexOf(".") + 1) : "");
+                evt.setSizeBytes(e.getSize_bytes());
+                evt.setIsUsb(e.is_usb());
+                evt.setIngestBatchId(batchId);
+                fileEventRepository.save(evt);
+                response.incrementProcessed("file_events");
+            }
+        }
+
         return response;
     }
 

@@ -12,6 +12,7 @@ public class IngestBatchDTO {
     private List<BucketPayload> activity_buckets;
     private List<AppPayload> app_events;
     private List<WebPayload> web_events;
+    private List<FilePayload> file_events;
 
     @Data
     public static class HeartbeatPayload {
@@ -45,5 +46,16 @@ public class IngestBatchDTO {
         private String ts_start;
         private String ts_end;
         private String domain;
+    }
+
+    @Data
+    public static class FilePayload {
+        private UUID id;
+        private String timestamp; // ISO
+        private String operation; // created, modified, renamed, deleted
+        private String file_path;
+        private String file_name;
+        private long size_bytes;
+        private boolean is_usb;
     }
 }
