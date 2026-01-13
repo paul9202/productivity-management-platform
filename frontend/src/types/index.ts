@@ -119,3 +119,18 @@ export interface PolicyAck {
     acknowledgedAt?: string;
     syncedAt?: string;
 }
+
+export interface EnrollmentToken {
+    id: string;
+    tokenHash: string; // only for admin view if needed, usually we show partial
+    token: string; // The secret (only returned on creation)
+    type: 'BOOTSTRAP' | 'REGCODE';
+    expiresAt: string;
+    maxUses: number;
+    usedCount: number;
+    revokedAt?: string;
+    createdBy: string;
+    scopeTenantId: string;
+    scopeGroupId?: string;
+    createdAt: string;
+}

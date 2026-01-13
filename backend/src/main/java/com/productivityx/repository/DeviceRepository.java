@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DeviceRepository extends JpaRepository<Device, String> {
+    java.util.List<Device> findByGroupId(java.util.UUID groupId);
+    java.util.Optional<Device> findByFingerprintHash(String fingerprintHash);
 }

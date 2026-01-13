@@ -95,4 +95,24 @@ public class PolicyController {
         // In a real app, we might verify versionId belongs to policyId
         return ResponseEntity.ok(ackRepository.findByPolicyIdAndVersionId(id, versionId)); 
     }
+
+    @GetMapping("/effective")
+    public ResponseEntity<?> getEffectivePolicy(@RequestParam String deviceId) {
+        // MOCK IMPLEMENTATION for M3 Demo
+        // In real world: 
+        // 1. Look up device -> groupId
+        // 2. Look up policyTarget for that groupId
+        // 3. Get active version of that policy
+        // 4. Return configuration
+        
+        return ResponseEntity.ok(java.util.Map.of(
+            "policyName", "Default Security Policy",
+            "version", 1,
+            "configuration", java.util.Map.of(
+                "idleTimeoutMinutes", 15,
+                "blockedSites", java.util.List.of("facebook.com", "instagram.com"),
+                "workHours", java.util.Map.of("start", "09:00", "end", "17:00")
+            )
+        ));
+    }
 }

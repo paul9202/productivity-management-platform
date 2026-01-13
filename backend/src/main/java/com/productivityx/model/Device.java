@@ -33,5 +33,12 @@ public class Device {
     @Column(name = "last_seen_at")
     private LocalDateTime lastSeenAt;
     
-    private String fingerprint;
+    @Column(name = "fingerprint_hash")
+    private String fingerprintHash;
+    
+    @Column(name = "cert_thumbprint")
+    private String certThumbprint;
+    
+    @Column(name = "agent_version")
+    private String agentVersion;
 }

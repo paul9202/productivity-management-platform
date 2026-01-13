@@ -37,4 +37,27 @@ public class DeviceController {
         deviceRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/heartbeat")
+    public ResponseEntity<Void> heartbeat(@PathVariable String id, @RequestBody HeartbeatRequest request) {
+        deviceRepository.findById(id).ifPresent(device -> {
+             device.setLastSeenAt(java.time.LocalDateTime.now());
+             // Update other fields if needed (e.g. status)
+             device.setStatus("ONLINE");
+             deviceRepository.save(device);
+        });
+        return ResponseEntity.ok().build();
+    }
+    
+    @PostMapping("/{id}/rotate-cert")
+    public ResponseEntity<?> rotateCert(@PathVariable String id) {
+        // Mock Implementation
+        return ResponseEntity.ok().body(java.util.Map.of("message", "Cert rotation initiated"));
+    }
+
+    @lombok.Data
+    static class HeartbeatRequest {
+        private String status;
+        private String agentVersion;
+    }
 }

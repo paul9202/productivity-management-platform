@@ -1,5 +1,5 @@
 import {
-    DashboardSummary, Department, Employee, AlertEvent, PolicySettings, Device, DeviceGroup, Policy, PolicyVersion, PolicyAck
+    DashboardSummary, Department, Employee, AlertEvent, PolicySettings, Device, DeviceGroup, Policy, PolicyVersion, PolicyAck, EnrollmentToken
 } from '../types';
 import { LoginRequest, LoginResponse } from '../types/auth';
 import { MOCK_ALERTS, MOCK_DASHBOARD, MOCK_DEPARTMENTS, MOCK_EMPLOYEES, MOCK_POLICY } from '../mock/mockData';
@@ -44,6 +44,11 @@ export interface ApiClient {
     publishPolicyVersion(policyId: string, versionId: string): Promise<Policy>;
     deletePolicy(id: string): Promise<void>;
     listPolicyAcks(policyId: string, versionId: string): Promise<PolicyAck[]>;
+
+    // Enrollment
+    listEnrollmentTokens(): Promise<EnrollmentToken[]>;
+    createEnrollmentToken(token: Partial<EnrollmentToken>): Promise<EnrollmentToken>;
+    revokeEnrollmentToken(id: string): Promise<void>;
 }
 
 class MockApiClient implements ApiClient {
@@ -102,6 +107,24 @@ class MockApiClient implements ApiClient {
             { id: 'ack1', policyId, versionId, deviceId: 'dev-1', status: 'APPLIED', acknowledgedAt: new Date().toISOString() },
             { id: 'ack2', policyId, versionId, deviceId: 'dev-2', status: 'PENDING', message: 'Device offline' }
         ]), 300));
+    }
+    async listEnrollmentTokens(): Promise<EnrollmentToken[]> {
+        return new Promise(resolve => setTimeout(() => resolve([
+            { id: 't1', token: '******', tokenHash: 'hash1', type: 'BOOTSTRAP', expiresAt: '2026-12-31T00:00:00Z', maxUses: 9999, usedCount: 5, createdBy: 'admin', scopeTenantId: 'org1', createdAt: new Date().toISOString() },
+            { id: 't2', token: 'REG-1234', tokenHash: 'hash2', type: 'REGCODE', expiresAt: '2026-02-01T00:00:00Z', maxUses: 1, usedCount: 0, createdBy: 'admin', scopeTenantId: 'org1', createdAt: new Date().toISOString() }
+        ]), 300));
+    }
+    async createEnrollmentToken(token: Partial<EnrollmentToken>): Promise<EnrollmentToken> {
+        return new Promise(resolve => setTimeout(() => resolve({
+            ...token,
+            id: 't-new-' + Date.now(),
+            token: token.type === 'REGCODE' ? 'REG-' + Date.now() : 'BOOT-' + Date.now(), // Mock secret generation
+            usedCount: 0,
+            createdAt: new Date().toISOString()
+        } as EnrollmentToken), 300));
+    }
+    async revokeEnrollmentToken(id: string): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, 300));
     }
     async listDevices(): Promise<Device[]> {
         return new Promise(resolve => setTimeout(() => resolve([
@@ -368,6 +391,26 @@ class HttpApiClient implements ApiClient {
         const res = await fetch(`/api/policies/${policyId}/versions/${versionId}/acks`);
         if (!res.ok) throw new Error('Failed to list ACKs');
         return res.json();
+    }
+
+    // Enrollment
+    async listEnrollmentTokens(): Promise<EnrollmentToken[]> {
+        const res = await fetch('/api/enrollment-tokens');
+        if (!res.ok) throw new Error('Failed to list tokens');
+        return res.json();
+    }
+    async createEnrollmentToken(token: Partial<EnrollmentToken>): Promise<EnrollmentToken> {
+        const res = await fetch('/api/enrollment-tokens', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(token)
+        });
+        if (!res.ok) throw new Error('Failed to create token');
+        return res.json();
+    }
+    async revokeEnrollmentToken(id: string): Promise<void> {
+        const res = await fetch(`/api/enrollment-tokens/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to revoke token');
     }
 }
 
