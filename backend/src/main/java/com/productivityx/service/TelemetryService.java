@@ -2,13 +2,12 @@ package com.productivityx.service;
 
 import com.productivityx.dto.TelemetryBatchRequest;
 import com.productivityx.dto.TelemetryResponse;
-import com.productivityx.model.DeviceRegistry;
+import com.productivityx.model.Device;
 import com.productivityx.model.TelemetryEvent;
-import com.productivityx.repository.DeviceRegistryRepository;
+import com.productivityx.repository.DeviceRepository;
 import com.productivityx.repository.TelemetryEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +21,7 @@ import java.util.List;
 public class TelemetryService {
 
     private final TelemetryEventRepository telemetryRepository;
-    private final DeviceRegistryRepository deviceRepository;
+    private final DeviceRepository deviceRepository;
 
     @Transactional
     public TelemetryResponse ingestBatch(String deviceId, List<TelemetryBatchRequest> batch) {
@@ -77,12 +76,14 @@ public class TelemetryService {
 
     private void ensureDeviceRegistered(String deviceId) {
         if (!deviceRepository.existsById(deviceId)) {
-            DeviceRegistry device = new DeviceRegistry();
-            device.setDeviceId(deviceId);
+            Device device = new Device();
+            // In V3 Schema device_id is a VARCHAR, so we can use the string directly
+            device.setDeviceId(deviceId); 
+            device.setName("Auto-Registered Device"); // Required field
             device.setStatus("ACTIVE");
             device.setEnrolledAt(LocalDateTime.now());
             device.setLastSeenAt(LocalDateTime.now());
-            // Tenant would be resolved from Cert or default
+            // Tenant/Group would need assignment logic, setting null or defaults for now
             deviceRepository.save(device);
         } else {
             // Update last seen
