@@ -207,8 +207,8 @@ public class TelemetryService {
             com.productivityx.dto.telemetry.TimelineBucketDTO bucket = new com.productivityx.dto.telemetry.TimelineBucketDTO();
             bucket.setTimestamp(time.toString());
             boolean isWorkHour = time.getHour() >= 9 && time.getHour() <= 17;
-            bucket.setActiveSeconds(isWorkHour ? 3000 + (long)(Math.random() * 600) : 0);
-            bucket.setIdleSeconds(isWorkHour ? 300 + (long)(Math.random() * 300) : 0);
+            bucket.setActiveSeconds(isWorkHour ? 3000 + (int)(Math.random() * 600) : 0);
+            bucket.setIdleSeconds(isWorkHour ? 300 + (int)(Math.random() * 300) : 0);
             bucket.setFocusScore(isWorkHour ? 70 + (int)(Math.random() * 30) : 0);
             timeline.add(bucket);
         }
