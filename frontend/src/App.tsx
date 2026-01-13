@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Devices from './pages/Devices';
+import DeviceGroups from './pages/DeviceGroups';
 import Employees from './pages/Employees';
 import Departments from './pages/Departments';
 import Alerts from './pages/Alerts';
@@ -26,6 +27,7 @@ const App: React.FC = () => {
                                 <Route index element={<Dashboard />} />
                                 <Route path="alerts" element={<Alerts />} />
                                 <Route path="devices" element={<Devices />} />
+                                <Route path="device-groups" element={<DeviceGroups />} />
                             </Route>
                         </Route>
 

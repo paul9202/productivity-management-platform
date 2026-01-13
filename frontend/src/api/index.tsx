@@ -1,5 +1,5 @@
 import {
-    DashboardSummary, Department, Employee, AlertEvent, PolicySettings, Device
+    DashboardSummary, Department, Employee, AlertEvent, PolicySettings, Device, DeviceGroup
 } from '../types';
 import { LoginRequest, LoginResponse } from '../types/auth';
 import { MOCK_ALERTS, MOCK_DASHBOARD, MOCK_DEPARTMENTS, MOCK_EMPLOYEES, MOCK_POLICY } from '../mock/mockData';
@@ -13,9 +13,26 @@ export interface ApiClient {
     listAlerts(): Promise<AlertEvent[]>;
     getPolicies(): Promise<PolicySettings>;
     listDevices(): Promise<Device[]>;
+    listDeviceGroups(): Promise<DeviceGroup[]>;
+    createDeviceGroup(group: Partial<DeviceGroup>): Promise<DeviceGroup>;
 }
 
 class MockApiClient implements ApiClient {
+    async listDeviceGroups(): Promise<DeviceGroup[]> {
+        return new Promise(resolve => setTimeout(() => resolve([
+            { id: 'g1', name: 'Engineering Laptops', description: 'All engineering devices', organizationId: 'org1', createdAt: new Date().toISOString() },
+            { id: 'g2', name: 'Sales Tablets', description: 'Field sales devices', organizationId: 'org1', createdAt: new Date().toISOString() }
+        ]), 300));
+    }
+    async createDeviceGroup(group: Partial<DeviceGroup>): Promise<DeviceGroup> {
+        return new Promise(resolve => setTimeout(() => resolve({
+            id: 'g-new-' + Date.now(),
+            name: group.name!,
+            description: group.description!,
+            organizationId: 'org1',
+            createdAt: new Date().toISOString()
+        } as DeviceGroup), 300));
+    }
     async listDevices(): Promise<Device[]> {
         return new Promise(resolve => setTimeout(() => resolve([
             { id: 'dev-1', name: 'Mock Device 1', status: 'ONLINE', groupId: 'g1', tenantId: 't1', version: '1.0', lastSeenAt: new Date().toISOString() },
@@ -115,6 +132,20 @@ class HttpApiClient implements ApiClient {
     async listDevices(): Promise<Device[]> {
         const res = await fetch('/api/devices');
         if (!res.ok) throw new Error('Failed to fetch devices');
+        return res.json();
+    }
+    async listDeviceGroups(): Promise<DeviceGroup[]> {
+        const res = await fetch('/api/device-groups');
+        if (!res.ok) throw new Error('Failed to fetch device groups');
+        return res.json();
+    }
+    async createDeviceGroup(group: Partial<DeviceGroup>): Promise<DeviceGroup> {
+        const res = await fetch('/api/device-groups', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(group)
+        });
+        if (!res.ok) throw new Error('Failed to create device group');
         return res.json();
     }
 }

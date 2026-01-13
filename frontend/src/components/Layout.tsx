@@ -42,6 +42,9 @@ const Layout: React.FC = () => {
                         <li key="Devices">
                             <NavLink to="/devices" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Devices</NavLink>
                         </li>
+                        <li key="DeviceGroups">
+                            <NavLink to="/device-groups" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Groups</NavLink>
+                        </li>
 
                         {(hasRole(['ADMIN', 'MANAGER'])) && (
                             <>

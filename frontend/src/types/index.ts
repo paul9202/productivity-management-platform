@@ -77,3 +77,12 @@ export interface Device {
     version: string;
     lastSeenAt: string;
 }
+
+export interface DeviceGroup {
+    id: string;
+    name: string;
+    description: string;
+    organizationId: string;
+    createdAt: string;
+    deviceCount?: number; // Optional, for UI display if needed
+}
