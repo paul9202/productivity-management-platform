@@ -62,9 +62,14 @@ const Layout: React.FC = () => {
                         </li>
 
                         {(hasRole(['ADMIN'])) && (
-                            <li key="Policies">
-                                <NavLink to="/policies" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Policies</NavLink>
-                            </li>
+                            <>
+                                <li key="Policies">
+                                    <NavLink to="/policies" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Policies</NavLink>
+                                </li>
+                                <li key="Enrollment">
+                                    <NavLink to="/enrollment" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Enrollment</NavLink>
+                                </li>
+                            </>
                         )}
                     </ul>
                 </nav>
