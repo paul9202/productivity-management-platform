@@ -3,9 +3,11 @@ package com.productivityx.controller;
 import com.productivityx.model.Device;
 import com.productivityx.model.DeviceCertificate;
 import com.productivityx.model.EnrollmentToken;
+import com.productivityx.model.EnrollmentToken;
 import com.productivityx.repository.DeviceRepository;
 import com.productivityx.repository.DeviceCertificateRepository;
 import com.productivityx.repository.EnrollmentTokenRepository;
+import com.productivityx.service.CertificateService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,7 @@ public class EnrollmentController {
     private final EnrollmentTokenRepository tokenRepository;
     private final DeviceRepository deviceRepository;
     private final DeviceCertificateRepository certificateRepository;
+    private final CertificateService certificateService;
 
     @PostMapping
     @Transactional
@@ -86,7 +89,10 @@ public class EnrollmentController {
         // In real world: Generate KeyPair, Sign Cert, Export PFX
         // Here: Generate a dummy "thumbprint" and "pfxBlob"
         String thumbprint = UUID.randomUUID().toString();
-        String pfxBase64 = "MOCK_PFX_DATA_BASE64_ENCODED_FOR_" + device.getDeviceId();
+        // Use Service to generate PFX (Mock or Real based on Config)
+        String pfxPassword = "mock-password"; // In prod, this should be random per device
+        byte[] pfxBytes = certificateService.issueCertificate(device.getDeviceId(), pfxPassword, thumbprint);
+        String pfxBase64 = java.util.Base64.getEncoder().encodeToString(pfxBytes);
         
         device.setCertThumbprint(thumbprint);
         deviceRepository.save(device);

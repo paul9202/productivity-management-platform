@@ -32,4 +32,5 @@ logging:
 
 productivityx:
   security:
-    mtls-header: "X-Client-Cert-Hash" # For simulation or LB forwarding
+    mtls-header: "X-Client-Cert-Hash"
+    pki-mode: REAL # Options: MOCK, REAL
