@@ -29,5 +29,5 @@ public class PolicyVersion {
     private LocalDateTime createdAt = LocalDateTime.now();
     
     @Column(name = "created_by")
-    private String createdBy; // User ID
+    private UUID createdBy; // User ID
 }
