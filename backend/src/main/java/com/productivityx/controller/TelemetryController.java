@@ -23,7 +23,10 @@ public class TelemetryController {
             @RequestBody List<TelemetryBatchRequest> batch,
             jakarta.servlet.http.HttpServletRequest request) {
         
-        String deviceId = authentication.getName(); 
+        String deviceId = null;
+        if (authentication != null) {
+            deviceId = authentication.getName();
+        }
         
         // Fallback for Mock/HTTP mode where mTLS isn't populating the Principal
         if (deviceId == null || "anonymousUser".equals(deviceId)) {
