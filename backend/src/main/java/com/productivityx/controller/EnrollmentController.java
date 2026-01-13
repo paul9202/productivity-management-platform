@@ -37,11 +37,14 @@ public class EnrollmentController {
         
         var tokenOpt = tokenRepository.findByTokenHash(request.getToken());
         if (tokenOpt.isEmpty()) {
+            System.out.println("DEBUG: Token not found in DB: " + request.getToken()); // Simple sysout for visibility
             return ResponseEntity.status(401).body(new ErrorResponse("Invalid token"));
         }
         
         EnrollmentToken token = tokenOpt.get();
         if (!token.isValid()) {
+             System.out.println(String.format("DEBUG: Token invalid. Revoked=%s, Expired=%s, Uses=%d/%d", 
+                token.getRevokedAt(), token.getExpiresAt(), token.getUsedCount(), token.getMaxUses()));
              return ResponseEntity.status(401).body(new ErrorResponse("Token expired or revoked"));
         }
 
