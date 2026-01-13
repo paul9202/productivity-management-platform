@@ -112,6 +112,11 @@ class HttpApiClient implements ApiClient {
         const res = await fetch('/api/policies');
         return res.json();
     }
+    async listDevices(): Promise<Device[]> {
+        const res = await fetch('/api/devices');
+        if (!res.ok) throw new Error('Failed to fetch devices');
+        return res.json();
+    }
 }
 
 const api = import.meta.env.VITE_API_MODE === 'http' ? new HttpApiClient() : new MockApiClient();
