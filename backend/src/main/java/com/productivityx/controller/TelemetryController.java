@@ -52,4 +52,29 @@ public class TelemetryController {
         
         return ResponseEntity.ok(telemetryService.getEvents(deviceId, page, size));
     }
+
+    @GetMapping("/summary")
+    public ResponseEntity<com.productivityx.dto.telemetry.TelemetrySummaryDTO> getTelemetrySummary(
+            @RequestParam String deviceId,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to) {
+        return ResponseEntity.ok(telemetryService.getSummary(deviceId, from, to));
+    }
+
+    @GetMapping("/timeline")
+    public ResponseEntity<List<com.productivityx.dto.telemetry.TimelineBucketDTO>> getTelemetryTimeline(
+            @RequestParam String deviceId,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to) {
+        return ResponseEntity.ok(telemetryService.getTimeline(deviceId, from, to));
+    }
+
+    @GetMapping("/events")
+    public ResponseEntity<List<com.productivityx.dto.telemetry.AdvancedTelemetryEventDTO>> getTelemetryEvents(
+            @RequestParam String deviceId,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to) {
+        return ResponseEntity.ok(telemetryService.getAdvancedEvents(deviceId, type, from, to));
+    }
 }

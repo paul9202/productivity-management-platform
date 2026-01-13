@@ -10,10 +10,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.productivityx.dto.telemetry.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -95,5 +97,109 @@ public class TelemetryService {
     }
     public List<TelemetryEvent> getEvents(String deviceId, int page, int size) {
         return telemetryRepository.findByDeviceIdOrderByTimestampDesc(deviceId, org.springframework.data.domain.PageRequest.of(page, size)).getContent();
+    }
+
+    // --- MOCK IMPLEMENTATION FOR ADVANCED TELEMETRY ---
+    
+    public TelemetrySummaryDTO getSummary(String deviceId, String from, String to) {
+        List<TimelineBucketDTO> buckets = getTimeline(deviceId, from, to); // Regenerates data for consistency
+        long totalActive = buckets.stream().mapToLong(TimelineBucketDTO::getActiveSeconds).sum();
+        long totalIdle = buckets.stream().mapToLong(TimelineBucketDTO::getIdleSeconds).sum();
+        long totalLocked = buckets.stream().mapToLong(TimelineBucketDTO::getLockedSeconds).sum();
+
+        // Simple aggregation logic
+        List<TelemetrySummaryDTO.TopItemDTO> topApps = new ArrayList<>();
+        topApps.add(TelemetrySummaryDTO.TopItemDTO.builder().name("VS Code").durationSeconds(totalActive / 2).category("Dev").build());
+        topApps.add(TelemetrySummaryDTO.TopItemDTO.builder().name("Chrome").durationSeconds(totalActive / 3).category("Web").build());
+
+        return TelemetrySummaryDTO.builder()
+                .deviceId(deviceId)
+                .userId("mock-user")
+                .from(from != null ? from : LocalDateTime.now().minusHours(24).toString())
+                .to(to != null ? to : LocalDateTime.now().toString())
+                .totalActiveSeconds(totalActive)
+                .totalIdleSeconds(totalIdle)
+                .totalLockedSeconds(totalLocked)
+                .productivityScore(75)
+                .riskScore(20)
+                .riskCounters(TelemetrySummaryDTO.RiskCountersDTO.builder()
+                        .blocks(2).usbEvents(1).sensitiveKeywords(0).anomalies(1).build())
+                .topApps(topApps)
+                .topDomains(List.of())
+                .status(TelemetrySummaryDTO.StatusDTO.builder()
+                        .online(true)
+                        .lastSeenAt(LocalDateTime.now().toString())
+                        .agentVersion("1.0.0")
+                        .policyVersion("v1")
+                        .build())
+                .build();
+    }
+
+    public List<TimelineBucketDTO> getTimeline(String deviceId, String from, String to) {
+        // Generate 24h of buckets
+        List<TimelineBucketDTO> buckets = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = now.minusHours(24);
+        
+        LocalDateTime cursor = start;
+        Random rand = new Random();
+        
+        while (cursor.isBefore(now)) {
+            int active = rand.nextInt(300);
+            int idle = rand.nextInt(300 - active);
+            int locked = 300 - active - idle;
+            
+            buckets.add(TimelineBucketDTO.builder()
+                    .startTime(cursor.toString())
+                    .endTime(cursor.plusMinutes(5).toString())
+                    .activeSeconds(active)
+                    .idleSeconds(idle)
+                    .lockedSeconds(locked)
+                    .topApp(active > 150 ? "VS Code" : "Chrome")
+                    .topDomain("google.com")
+                    .eventCounts(Map.of("block", 0, "file", 0))
+                    .build());
+            
+            cursor = cursor.plusMinutes(5);
+        }
+        return buckets;
+    }
+
+    public List<AdvancedTelemetryEventDTO> getAdvancedEvents(String deviceId, String type, String from, String to) {
+        List<AdvancedTelemetryEventDTO> events = new ArrayList<>();
+        // Generate some sample events
+        events.add(AdvancedTelemetryEventDTO.builder()
+                .id(UUID.randomUUID().toString())
+                .deviceId(deviceId)
+                .userId("user-1")
+                .timestamp(LocalDateTime.now().minusMinutes(10).toString())
+                .type("APP")
+                .metadata(Map.of("appName", "VS Code", "durationSeconds", 600, "category", "Dev"))
+                .build());
+                
+        events.add(AdvancedTelemetryEventDTO.builder()
+                .id(UUID.randomUUID().toString())
+                .deviceId(deviceId)
+                .userId("user-1")
+                .timestamp(LocalDateTime.now().minusMinutes(25).toString())
+                .type("WEB")
+                .metadata(Map.of("domain", "github.com", "url", "https://github.com", "category", "Dev", "title", "GitHub"))
+                .build());
+
+         if ("FILE".equals(type) || type == null) {
+            events.add(AdvancedTelemetryEventDTO.builder()
+                .id(UUID.randomUUID().toString())
+                .deviceId(deviceId)
+                .userId("user-1")
+                .timestamp(LocalDateTime.now().minusMinutes(45).toString())
+                .type("FILE")
+                .metadata(Map.of("operation", "COPY", "filePath", "E:\\data.zip", "isUsb", true, "fileSize", 102400))
+                .build());
+         }
+
+        if (type != null) {
+            return events.stream().filter(e -> e.getType().equals(type)).collect(Collectors.toList());
+        }
+        return events;
     }
 }
