@@ -1,10 +1,12 @@
 import {
     DashboardSummary, Department, Employee, AlertEvent, PolicySettings
 } from '../types';
+import { LoginRequest, LoginResponse } from '../types/auth';
 import { MOCK_ALERTS, MOCK_DASHBOARD, MOCK_DEPARTMENTS, MOCK_EMPLOYEES, MOCK_POLICY } from '../mock/mockData';
 import React, { createContext, useContext } from 'react';
 
 export interface ApiClient {
+    login(req: LoginRequest): Promise<LoginResponse>;
     getDashboardSummary(): Promise<DashboardSummary>;
     listDepartments(): Promise<Department[]>;
     listEmployees(filter?: { deptId?: string }): Promise<Employee[]>;
@@ -13,6 +15,26 @@ export interface ApiClient {
 }
 
 class MockApiClient implements ApiClient {
+    async login(req: LoginRequest): Promise<LoginResponse> {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                if (req.password === 'password') {
+                    resolve({
+                        token: 'mock-jwt-token',
+                        user: {
+                            id: 'u-admin',
+                            name: 'Demo Admin',
+                            email: req.username,
+                            role: 'ADMIN',
+                            tenantId: 't-demo'
+                        }
+                    });
+                } else {
+                    reject(new Error('Invalid credentials (try password="password")'));
+                }
+            }, 500);
+        });
+    }
     async getDashboardSummary(): Promise<DashboardSummary> {
         return new Promise(resolve => setTimeout(() => resolve(MOCK_DASHBOARD), 300));
     }
@@ -38,9 +60,17 @@ class MockApiClient implements ApiClient {
     }
 }
 
-// HttpApiClient placeholder - in real app would use fetch/axios
 // HttpApiClient implementation using fetch
 class HttpApiClient implements ApiClient {
+    async login(req: LoginRequest): Promise<LoginResponse> {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(req)
+        });
+        if (!res.ok) throw new Error('Login failed');
+        return res.json();
+    }
     async getDashboardSummary(): Promise<DashboardSummary> {
         const res = await fetch('/api/dashboard/summary');
         if (!res.ok) throw new Error('Failed to fetch dashboard');
