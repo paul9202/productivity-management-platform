@@ -51,7 +51,7 @@ const Devices: React.FC = () => {
     };
 
     const handleTelemetryClick = (device: Device) => {
-        navigate(`/admin/devices/${device.deviceId}/telemetry`);
+        navigate(`/devices/${device.deviceId}/telemetry`);
     };
 
     const handleDeleteClick = async (id: string) => {
