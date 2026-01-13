@@ -8,6 +8,7 @@ import com.productivityx.repository.DeviceCertificateRepository;
 import com.productivityx.repository.EnrollmentTokenRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/enroll")
 @RequiredArgsConstructor
+@Slf4j
 public class EnrollmentController {
 
     private final EnrollmentTokenRepository tokenRepository;
@@ -28,23 +30,16 @@ public class EnrollmentController {
     @Transactional
     public ResponseEntity<?> enrollDevice(@RequestBody EnrollmentRequest request) {
         // 1. Validate Token
-        // Hash the incoming token to match DB (assuming simple string match for mock)
-        // In prod, request.token should be hashed before lookup if DB stores hash
-        // For this demo, let's assume DB stores the direct token string or we hash it here.
-        // The V6 migration inserted 'hash_bootstrap_123', so we expect client to send that or the secret that hashes to it.
-        // Let's assume the client sends the SECRET and we look it up. 
-        // For simplicity in this "mock" compatible backend: DB stores the Secret directly as "hash".
-        
         var tokenOpt = tokenRepository.findByTokenHash(request.getToken());
         if (tokenOpt.isEmpty()) {
-            System.out.println("DEBUG: Token not found in DB: " + request.getToken()); // Simple sysout for visibility
+            log.warn("Enrollment Failed: Token not found in DB. Token={}", request.getToken());
             return ResponseEntity.status(401).body(new ErrorResponse("Invalid token"));
         }
         
         EnrollmentToken token = tokenOpt.get();
         if (!token.isValid()) {
-             System.out.println(String.format("DEBUG: Token invalid. Revoked=%s, Expired=%s, Uses=%d/%d", 
-                token.getRevokedAt(), token.getExpiresAt(), token.getUsedCount(), token.getMaxUses()));
+             log.warn("Enrollment Failed: Token invalid. Revoked={}, Expired={}, Uses={}/{}", 
+                token.getRevokedAt(), token.getExpiresAt(), token.getUsedCount(), token.getMaxUses());
              return ResponseEntity.status(401).body(new ErrorResponse("Token expired or revoked"));
         }
 
