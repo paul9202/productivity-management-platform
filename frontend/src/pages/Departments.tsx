@@ -8,7 +8,7 @@ const Departments: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingDept, setEditingDept] = useState<Department | null>(null);
-    const [formData, setFormData] = useState({ name: '', managerId: 'man-1' }); // Default manager for now
+    const [formData, setFormData] = useState({ name: '', managerId: '' }); // Removed 'man-1' default which caused backend error
 
     useEffect(() => {
         loadDepts();
@@ -24,7 +24,7 @@ const Departments: React.FC = () => {
 
     const handleCreateClick = () => {
         setEditingDept(null);
-        setFormData({ name: '', managerId: 'man-1' });
+        setFormData({ name: '', managerId: '' });
         setShowModal(true);
     };
 
@@ -52,7 +52,11 @@ const Departments: React.FC = () => {
             if (editingDept) {
                 await api.updateDepartment(editingDept.id, formData);
             } else {
-                await api.createDepartment({ ...formData, parentId: null });
+                const payload = {
+                    ...formData,
+                    managerId: formData.managerId || null // Ensure null if empty string
+                };
+                await api.createDepartment(payload);
             }
             setShowModal(false);
             loadDepts();

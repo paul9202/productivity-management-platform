@@ -28,4 +28,21 @@ public class DeviceGroupController {
     public ResponseEntity<DeviceGroup> createGroup(@RequestBody DeviceGroup group) {
         return ResponseEntity.ok(groupRepository.save(group));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<DeviceGroup> updateGroup(@PathVariable UUID id, @RequestBody DeviceGroup group) {
+        return groupRepository.findById(id)
+            .map(existing -> {
+                existing.setName(group.getName());
+                existing.setDescription(group.getDescription());
+                return ResponseEntity.ok(groupRepository.save(existing));
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteGroup(@PathVariable UUID id) {
+        groupRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -53,7 +53,11 @@ const Devices: React.FC = () => {
         e.preventDefault();
         try {
             if (editingDevice) {
-                await api.updateDevice(editingDevice.id, formData);
+                const payload = {
+                    ...formData,
+                    groupId: formData.groupId || null // Ensure null if empty string
+                };
+                await api.updateDevice(editingDevice.id, payload);
             }
             setShowModal(false);
             loadDevices();

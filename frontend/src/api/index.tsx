@@ -31,6 +31,8 @@ export interface ApiClient {
 
     listDeviceGroups(): Promise<DeviceGroup[]>;
     createDeviceGroup(group: Partial<DeviceGroup>): Promise<DeviceGroup>;
+    updateDeviceGroup(id: string, group: Partial<DeviceGroup>): Promise<DeviceGroup>;
+    deleteDeviceGroup(id: string): Promise<void>;
 }
 
 class MockApiClient implements ApiClient {
@@ -48,6 +50,14 @@ class MockApiClient implements ApiClient {
             organizationId: 'org1',
             createdAt: new Date().toISOString()
         } as DeviceGroup), 300));
+    }
+    async updateDeviceGroup(id: string, group: Partial<DeviceGroup>): Promise<DeviceGroup> {
+        return new Promise(resolve => setTimeout(() => resolve({
+            ...group, id
+        } as DeviceGroup), 300));
+    }
+    async deleteDeviceGroup(id: string): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, 300));
     }
     async listDevices(): Promise<Device[]> {
         return new Promise(resolve => setTimeout(() => resolve([
@@ -189,6 +199,19 @@ class HttpApiClient implements ApiClient {
         });
         if (!res.ok) throw new Error('Failed to create device group');
         return res.json();
+    }
+    async updateDeviceGroup(id: string, group: Partial<DeviceGroup>): Promise<DeviceGroup> {
+        const res = await fetch(`/api/device-groups/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(group)
+        });
+        if (!res.ok) throw new Error('Failed to update device group');
+        return res.json();
+    }
+    async deleteDeviceGroup(id: string): Promise<void> {
+        const res = await fetch(`/api/device-groups/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete device group');
     }
 
     // Departments HTTP
