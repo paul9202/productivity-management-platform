@@ -163,7 +163,7 @@ public class TelemetryService {
             return LocalDateTime.now();
         }
     }
-    }
+
 
     // --- Legacy / Read Methods Support (Restored for Controller Compatibility) ---
 
