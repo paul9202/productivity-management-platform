@@ -6,18 +6,26 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "device_registry")
+@Table(name = "devices")
 @Data
-public class DeviceRegistry {
+public class Device {
 
     @Id
     @Column(name = "device_id")
     private String deviceId; // urn:focus:device:uuid
 
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "group_id")
+    private UUID groupId;
+
     @Column(name = "tenant_id")
-    private UUID tenantId;
+    private UUID tenantId; // organization_id in V3 logic
 
     private String status;
+
+    private String version;
     
     @Column(name = "enrolled_at")
     private LocalDateTime enrolledAt;
