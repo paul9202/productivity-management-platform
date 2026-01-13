@@ -9,8 +9,11 @@ ALTER TABLE policy_versions RENAME COLUMN config TO configuration;
 ALTER TABLE policy_versions ALTER COLUMN configuration TYPE TEXT;
 
 -- Align Policy Targets Table
-ALTER TABLE policy_targets RENAME COLUMN id TO target_id;
+-- 1. Rename existing 'target_id' (value) to 'target_value' to free up the name
 ALTER TABLE policy_targets RENAME COLUMN target_id TO target_value;
+-- 2. Rename 'id' (PK) to 'target_id'
+ALTER TABLE policy_targets RENAME COLUMN id TO target_id;
+
 -- Cast VARCHAR to UUID (Safe because V3 seed data used UUID strings)
 ALTER TABLE policy_targets ALTER COLUMN target_value TYPE UUID USING target_value::uuid;
 ALTER TABLE policy_targets ADD COLUMN IF NOT EXISTS priority INTEGER DEFAULT 0;
