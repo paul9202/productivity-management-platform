@@ -21,7 +21,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                     <hr style={{ margin: '0.25rem 0', borderColor: '#e2e8f0' }} />
                     <p>Top App: <span style={{ fontWeight: 500 }}>{data.topApp}</span></p>
                     <p>Top Site: <span style={{ fontWeight: 500 }}>{data.topDomain}</span></p>
-                    {data.eventCounts.file > 0 && <p style={{ color: '#ef4444', fontWeight: 'bold' }}>Files: {data.eventCounts.file}</p>}
+                    {data.eventCounts?.file > 0 && <p style={{ color: '#ef4444', fontWeight: 'bold' }}>Files: {data.eventCounts.file}</p>}
                 </div>
             </div>
         );

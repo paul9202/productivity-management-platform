@@ -55,8 +55,8 @@ export const generateExecutiveReport = (
         summary: summaryText,
         keyInsights,
         topActivities: {
-            apps: (ctx.topApps || []).slice(0, 3).map(a => a.name),
-            domains: (ctx.topDomains || []).slice(0, 3).map(a => a.name)
+            apps: (Array.isArray(ctx.topApps) ? ctx.topApps : []).slice(0, 3).map(a => a.name),
+            domains: (Array.isArray(ctx.topDomains) ? ctx.topDomains : []).slice(0, 3).map(a => a.name)
         },
         conclusion,
         disclaimer: 'This report is generated based on automated telemetry analysis and may contain false positives. Please verify with actual logs.'
