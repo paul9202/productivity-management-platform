@@ -1,10 +1,10 @@
 import { AlertEvent, DashboardSummary, Department, Employee, PolicySettings } from '../types';
 
 export const MOCK_DEPARTMENTS: Department[] = [
-    { id: 'dept-1', name: 'Engineering', managerName: 'Alice Johnson', memberCount: 12 },
-    { id: 'dept-2', name: 'Sales', managerName: 'Bob Smith', memberCount: 8 },
-    { id: 'dept-3', name: 'Marketing', managerName: 'Charlie Brown', memberCount: 6 },
-    { id: 'dept-4', name: 'HR', managerName: 'Diana Prince', memberCount: 4 },
+    { id: 'dept-1', name: 'Engineering', managerName: 'Alice Johnson', memberCount: 12, createdAt: new Date().toISOString() },
+    { id: 'dept-2', name: 'Sales', managerName: 'Bob Smith', memberCount: 8, createdAt: new Date().toISOString() },
+    { id: 'dept-3', name: 'Marketing', managerName: 'Charlie Brown', memberCount: 6, createdAt: new Date().toISOString() },
+    { id: 'dept-4', name: 'HR', managerName: 'Diana Prince', memberCount: 4, createdAt: new Date().toISOString() },
 ];
 
 const NAMES = ['John Doe', 'Jane Smith', 'Michael Chen', 'Sarah Connor', 'Kyle Reese', 'Tony Stark', 'Steve Rogers', 'Natasha Romanoff', 'Bruce Banner', 'Clint Barton', 'Wanda Maximoff', 'Vision', 'Sam Wilson', 'Bucky Barnes', 'Peter Parker', 'Stephen Strange', 'TChalla', 'Scott Lang', 'Hope Dyne', 'Carol Danvers'];

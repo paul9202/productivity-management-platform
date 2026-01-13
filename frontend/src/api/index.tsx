@@ -56,7 +56,7 @@ class MockApiClient implements ApiClient {
             ...group, id
         } as DeviceGroup), 300));
     }
-    async deleteDeviceGroup(id: string): Promise<void> {
+    async deleteDeviceGroup(_id: string): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, 300));
     }
     async listDevices(): Promise<Device[]> {
@@ -70,7 +70,7 @@ class MockApiClient implements ApiClient {
             ...device, id
         } as Device), 300));
     }
-    async deleteDevice(id: string): Promise<void> {
+    async deleteDevice(_id: string): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, 300));
     }
 
@@ -81,7 +81,7 @@ class MockApiClient implements ApiClient {
     async updateDepartment(id: string, dept: Partial<Department>): Promise<Department> {
         return new Promise(resolve => setTimeout(() => resolve({ ...dept, id } as Department), 300));
     }
-    async deleteDepartment(id: string): Promise<void> { return new Promise(resolve => setTimeout(resolve, 300)); }
+    async deleteDepartment(_id: string): Promise<void> { return new Promise(resolve => setTimeout(resolve, 300)); }
 
     // Employees Mock
     async createEmployee(emp: Partial<Employee>): Promise<Employee> {
@@ -90,7 +90,7 @@ class MockApiClient implements ApiClient {
     async updateEmployee(id: string, emp: Partial<Employee>): Promise<Employee> {
         return new Promise(resolve => setTimeout(() => resolve({ ...emp, id } as Employee), 300));
     }
-    async deleteEmployee(id: string): Promise<void> { return new Promise(resolve => setTimeout(resolve, 300)); }
+    async deleteEmployee(_id: string): Promise<void> { return new Promise(resolve => setTimeout(resolve, 300)); }
     async login(req: LoginRequest): Promise<LoginResponse> {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
@@ -100,7 +100,7 @@ class MockApiClient implements ApiClient {
                         user: {
                             id: 'u-admin',
                             name: 'Demo Admin',
-                            email: req.username,
+                            email: req.username || 'admin@demo.com',
                             role: 'ADMIN',
                             tenantId: 't-demo'
                         }
@@ -156,7 +156,7 @@ class HttpApiClient implements ApiClient {
         const res = await fetch('/api/departments');
         return res.json();
     }
-    async listEmployees(filter?: { deptId?: string }): Promise<Employee[]> {
+    async listEmployees(_filter?: { deptId?: string }): Promise<Employee[]> {
         const res = await fetch('/api/users');
         const users = await res.json();
         // Map User entity to Employee interface
@@ -278,6 +278,7 @@ class HttpApiClient implements ApiClient {
     }
 }
 
+// @ts-ignore
 const api = import.meta.env.VITE_API_MODE === 'http' ? new HttpApiClient() : new MockApiClient();
 const ApiContext = createContext<ApiClient>(api);
 

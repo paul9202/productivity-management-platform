@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { AuthState, LoginResponse, User } from '../types/auth';
+import { AuthState, LoginResponse } from '../types/auth';
 
 interface AuthContextType extends AuthState {
     login: (data: LoginResponse) => void;

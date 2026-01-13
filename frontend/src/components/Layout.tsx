@@ -75,7 +75,7 @@ const Layout: React.FC = () => {
                             {user?.name?.substring(0, 2).toUpperCase() || 'U'}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: '0.875rem', fontWeight: 600, truncate: true }}>{user?.name || 'User'}</div>
+                            <div style={{ fontSize: '0.875rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.name || 'User'}</div>
                             <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{user?.role}</div>
                         </div>
                         <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }} title="Logout">

@@ -1,8 +1,11 @@
 export interface Department {
     id: string;
     name: string;
-    managerName: string;
-    memberCount: number;
+    managerName?: string;
+    managerId?: string;
+    parentId?: string;
+    createdAt: string;
+    memberCount?: number;
 }
 
 export interface Employee {

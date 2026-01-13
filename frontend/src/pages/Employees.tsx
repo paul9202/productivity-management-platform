@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useApi } from '../api';
 import { Employee } from '../types';
+import { Modal } from '../components/Modal';
+import { Mail, Edit2, Trash2, Plus, Search } from 'lucide-react';
 
 const Employees: React.FC = () => {
     const api = useApi();
@@ -68,15 +70,22 @@ const Employees: React.FC = () => {
             <div className="flex-row space-between" style={{ marginBottom: 32 }}>
                 <div>
                     <h1>Directory</h1>
-                    <div style={{ color: 'var(--text-muted)', marginTop: -16 }}>Manage employee access and view individual metrics.</div>
+                    <div style={{ color: 'var(--text-muted)', marginTop: -4 }}>Manage employee access and view individual metrics.</div>
                 </div>
                 <div className="flex-row gap-md">
-                    <input
-                        type="text"
-                        placeholder="Search employees..."
-                        style={{ padding: '0.625rem', borderRadius: '0.5rem', border: '1px solid var(--border-subtle)', minWidth: 250 }}
-                    />
-                    <button className="btn-primary" onClick={handleCreateClick}>Add Employee</button>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 12, top: 12, color: 'var(--text-light)' }} />
+                        <input
+                            type="text"
+                            placeholder="Search employees..."
+                            className="input-field"
+                            style={{ paddingLeft: 36, width: 250 }}
+                        />
+                    </div>
+                    <button className="btn-primary" onClick={handleCreateClick}>
+                        <Plus size={18} />
+                        Add Employee
+                    </button>
                 </div>
             </div>
 
@@ -86,32 +95,45 @@ const Employees: React.FC = () => {
                         <tr>
                             <th>Employee Name</th>
                             <th>Role / Title</th>
-                            <th>Current Status</th>
+                            <th>Status</th>
                             <th>Email Address</th>
                             <th style={{ textAlign: 'right' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {employees.map(emp => (
-                            <tr key={emp.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                            <tr key={emp.id}>
                                 <td>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                        <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 600 }}>
+                                        <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600 }}>
                                             {emp.name.split(' ').map(n => n[0]).join('')}
                                         </div>
                                         <span style={{ fontWeight: 500 }}>{emp.name}</span>
                                     </div>
                                 </td>
-                                <td>{emp.role}</td>
                                 <td>
-                                    <span className={`badge badge-${emp.status?.toLowerCase() || 'neutral'}`}>
+                                    <span style={{ fontSize: '0.9em', color: 'var(--text-muted)' }}>{emp.role}</span>
+                                </td>
+                                <td>
+                                    <span className={`badge badge-${emp.status?.toLowerCase() === 'active' ? 'success' : 'neutral'}`}>
                                         {emp.status || 'UNKNOWN'}
                                     </span>
                                 </td>
-                                <td style={{ color: 'var(--text-muted)' }}>{emp.email}</td>
+                                <td style={{ color: 'var(--text-muted)' }}>
+                                    <div className="flex-row gap-sm">
+                                        <Mail size={14} />
+                                        {emp.email}
+                                    </div>
+                                </td>
                                 <td style={{ textAlign: 'right' }}>
-                                    <button className="btn-text" onClick={() => handleEditClick(emp)}>Edit</button>
-                                    <button className="btn-text" style={{ color: 'var(--color-danger)' }} onClick={() => handleDeleteClick(emp.id)}>Remove</button>
+                                    <div className="flex-row" style={{ justifyContent: 'flex-end' }}>
+                                        <button className="btn-icon" onClick={() => handleEditClick(emp)} title="Edit">
+                                            <Edit2 size={16} />
+                                        </button>
+                                        <button className="btn-icon" onClick={() => handleDeleteClick(emp.id)} title="Remove" style={{ color: 'var(--danger)' }}>
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -119,55 +141,53 @@ const Employees: React.FC = () => {
                 </table>
             </div>
 
-            {showModal && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    zIndex: 100
-                }}>
-                    <div className="card" style={{ width: 400 }}>
-                        <h2 style={{ marginTop: 0 }}>{editingEmp ? 'Edit Employee' : 'Add Employee'}</h2>
-                        <form onSubmit={handleSubmit}>
-                            <div className="form-group">
-                                <label>Name</label>
-                                <input
-                                    type="text"
-                                    className="input-field"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Email</label>
-                                <input
-                                    type="email"
-                                    className="input-field"
-                                    value={formData.email}
-                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Role</label>
-                                <select
-                                    className="input-field"
-                                    value={formData.role}
-                                    onChange={e => setFormData({ ...formData, role: e.target.value })}
-                                >
-                                    <option value="EMPLOYEE">Employee</option>
-                                    <option value="MANAGER">Manager</option>
-                                    <option value="ADMIN">Admin</option>
-                                </select>
-                            </div>
-                            <div className="flex-row space-between" style={{ marginTop: 24 }}>
-                                <button type="button" className="btn-text" onClick={() => setShowModal(false)}>Cancel</button>
-                                <button type="submit" className="btn-primary">Save</button>
-                            </div>
-                        </form>
+            <Modal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                title={editingEmp ? 'Edit Employee' : 'Add Employee'}
+                size="md"
+            >
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label>Name</label>
+                        <input
+                            type="text"
+                            className="input-field"
+                            value={formData.name}
+                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                            required
+                        />
                     </div>
-                </div>
-            )}
+                    <div className="form-group">
+                        <label>Email</label>
+                        <input
+                            type="email"
+                            className="input-field"
+                            value={formData.email}
+                            onChange={e => setFormData({ ...formData, email: e.target.value })}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>Role</label>
+                        <select
+                            className="input-field"
+                            value={formData.role}
+                            onChange={e => setFormData({ ...formData, role: e.target.value })}
+                        >
+                            <option value="EMPLOYEE">Employee</option>
+                            <option value="MANAGER">Manager</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
+                    </div>
+                    <div className="flex-row space-between" style={{ marginTop: 32 }}>
+                        <button type="button" className="btn-text" onClick={() => setShowModal(false)}>Cancel</button>
+                        <button type="submit" className="btn-primary">
+                            {editingEmp ? 'Save Changes' : 'Create Employee'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
         </div>
     );
 };
