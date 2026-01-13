@@ -1,61 +1,158 @@
+
 # Enterprise Productivity Admin Portal
 
-Clean, enterprise-grade Web Admin Portal for Employee Productivity Enhancement System.
+## M3: Automated Onboarding Delivery Report
 
-## Features
-- **Offline Demo Mode**: Zero backend dependency by default. Uses realistic mock data.
-- **Enterprise UI**: Clean layout, strict TypeScript, responsive design.
-- **Pages**: Dashboard, Employees, Departments, Alerts, Policies.
+## 1. File Changes
+### Backend (Spring Boot)
+- **Schema**: `src/main/resources/db/migration/V6__enrollment_and_certs.sql` (New Tables: `enrollment_tokens`, `device_certificates`; Alter `devices`).
+- **Models**:
+    - `src/main/java/com/productivityx/model/EnrollmentToken.java` (New)
+    - `src/main/java/com/productivityx/model/DeviceCertificate.java` (New)
+    - `src/main/java/com/productivityx/model/Device.java` (Updated fields: fingerprint, cert, status)
+- **Repositories**:
+    - `src/main/java/com/productivityx/repository/EnrollmentTokenRepository.java` (New)
+    - `src/main/java/com/productivityx/repository/DeviceCertificateRepository.java` (New)
+    - `src/main/java/com/productivityx/repository/DeviceRepository.java` (Updated: `findByFingerprintHash`)
+- **Controllers**:
+    - `src/main/java/com/productivityx/controller/EnrollmentTokenController.java` (New: `/api/enrollment-tokens` for Management)
+    - `src/main/java/com/productivityx/controller/EnrollmentController.java` (New: `/api/enroll` for Device Registration)
+    - `src/main/java/com/productivityx/controller/DeviceController.java` (Updated: `/heartbeat`, `/rotate-cert`)
+    - `src/main/java/com/productivityx/controller/PolicyController.java` (Updated: `/effective`)
 
-## Tech Stack
-- React 18 + TypeScript
-- Vite
-- Recharts (Charts)
-- No external UI libraries (Custom CSS components)
+### Frontend (React)
+- **Types**: `src/types/index.ts` (Added `EnrollmentToken`).
+- **API**: `src/api/index.tsx` (Added Enrollment methods to `ApiClient`, Mock, and Http implementations).
+- **Pages**: `src/pages/Enrollment.tsx` (New: Token Management UI).
+- **Routing**: `src/App.tsx` (Added `/admin/enrollment` route).
 
-## Quick Start (Offline Mode)
+## 2. API Documentation
 
-1. **Install Dependencies**
-   ```bash
-   cd frontend
-   npm install
-   ```
+### Enrollment (Device Side)
+- **POST `/api/enroll`**
+    - **Description**: Registers a new device using a Bootstrap Token or Registration Code.
+    - **Input**: `{ "token": "...", "fingerprintHash": "...", "hostname": "...", "agentVersion": "..." }`
+    - **Output**: `{ "deviceId": "...", "pfxBase64": "...", "certThumbprint": "...", "tenantId": "..." }`
+    - **Logic**: Validates token (hash/expiry/uses), registers/updates device, issues Mock PFX.
 
-2. **Run Dev Server**
-   ```bash
-   npm run dev
-   ```
-   Access at `http://localhost:5173`.
-   *Note: Runs on `0.0.0.0` for external access (e.g. from VM host).*
+### Device Lifecycle
+- **POST `/api/devices/{id}/heartbeat`**
+    - **Description**: Updates device status and last seen timestamp.
+    - **Input**: `{ "status": "ONLINE", "agentVersion": "..." }`
+    - **Action**: Updates `lastSeenAt` and `status`.
+- **POST `/api/devices/{id}/rotate-cert`**
+    - **Description**: Request a new certificate (Mock rotation).
+    - **Result**: Initiates rotation.
 
-## Environment Variables
-- `VITE_API_MODE`: `mock` (default) or `http`.
-  - `mock`: Uses in-memory seed data with simulated latency.
-  - `http`: Calls real backend endpoints.
+### Policy Management
+- **GET `/api/policies/effective?deviceId=...`**
+    - **Description**: Returns the effective policy configuration for a specific device.
+    - **Output**: JSON Configuration object (blocking rules, thresholds).
 
-## Backend Integration (Optional)
-To run with the real Spring Boot backend:
+### Enrollment Token Management (Admin Portal)
+- **GET `/api/enrollment-tokens`**: List all tokens.
+- **POST `/api/enrollment-tokens`**: Create a new token (Bootstrap or RegCode).
+    - **Input**: `{ "type": "BOOTSTRAP", "maxUses": 100, "expiresInDays": 30, "scopeGroupId": "..." }`
+- **DELETE `/api/enrollment-tokens/{id}`**: Revoke a token.
 
-1.  **Configure Database**
-    Ensure PostgreSQL is running and credentials in `backend/src/main/resources/application.yml` are correct.
+## 3. Enrollment State Machine
 
-2.  **Start Backend**
-    ```bash
-    cd backend
-    mvn clean install
-    mvn spring-boot:run
-    ```
-    - API: `http://localhost:8080/api`
-    - Health Check: `http://localhost:8080/api/health`
+`NEW` (Unregistered) -> `ENROLLING` (Contacting API) -> `ENROLLED` (DB Record Created) -> `CERT_ISSUED` (PFX Received) -> `ONLINE` (Heartbeat Active)
 
-3.  **Enable Frontend Connection**
-    Edit `frontend/.env`:
-    ```env
-    VITE_API_MODE=http
-    ```
-    Restart frontend (`npm run dev`).
+FAILED States:
+- `REVOKED`: Admin revoked device or cert.
+- `EXPIRED`: Cert expired.
 
-## Project Structure
-- `frontend/`: React + TypeScript Admin Portal
-- `backend/`: Spring Boot REST API + Flyway Migrations
+## 4. Local Run Steps
+
+### Requirements
+- Java 17+, Maven
+- Node.js 18+
+- Docker (for PostgreSQL)
+
+### Steps
+1.  **Start DB**: `docker-compose up -d`
+2.  **Start Backend**: `mvn clean spring-boot:run` (Migrations run automatically).
+3.  **Start Frontend**: `npm run dev` (Access at `http://localhost:5173`).
+4.  **Login**: Use `admin` / `password`.
+
+### Verification Scenarios
+**Scenario A: Zero-Touch Mock (Bootstrap)**
+1.  Go to `http://localhost:5173/admin/enrollment`.
+2.  Create a "BOOTSTRAP" token.
+3.  (Simulate Client): POST to `/api/enroll` with that token.
+4.  Check `Devices` list to see new device.
+
+**Scenario B: Manual Registration (Code)**
+1.  Create "REGCODE" token (e.g. `REG-123`).
+2.  Use Client/Postman to POST `/api/enroll` with `token: "REG-123"`.
+3.  Verify Token usage count increases to 1 in Portal.
+
+### Frontend (React)
+- **Types**: `src/types/index.ts` (Added `EnrollmentToken`).
+- **API**: `src/api/index.tsx` (Added Enrollment methods to `ApiClient`, Mock, and Http implementations).
+- **Pages**: `src/pages/Enrollment.tsx` (New: Token Management UI).
+- **Routing**: `src/App.tsx` (Added `/admin/enrollment` route).
+
+## 2. API Documentation
+
+### Enrollment (Device Side)
+- **POST `/api/enroll`**
+    - **Description**: Registers a new device using a Bootstrap Token or Registration Code.
+    - **Input**: `{ "token": "...", "fingerprintHash": "...", "hostname": "...", "agentVersion": "..." }`
+    - **Output**: `{ "deviceId": "...", "pfxBase64": "...", "certThumbprint": "...", "tenantId": "..." }`
+    - **Logic**: Validates token (hash/expiry/uses), registers/updates device, issues Mock PFX.
+
+### Device Lifecycle
+- **POST `/api/devices/{id}/heartbeat`**
+    - **Description**: Updates device status and last seen timestamp.
+    - **Input**: `{ "status": "ONLINE", "agentVersion": "..." }`
+    - **Action**: Updates `lastSeenAt` and `status`.
+- **POST `/api/devices/{id}/rotate-cert`**
+    - **Description**: Request a new certificate (Mock rotation).
+    - **Result**: Initiates rotation.
+
+### Policy Management
+- **GET `/api/policies/effective?deviceId=...`**
+    - **Description**: Returns the effective policy configuration for a specific device.
+    - **Output**: JSON Configuration object (blocking rules, thresholds).
+
+### Enrollment Token Management (Admin Portal)
+- **GET `/api/enrollment-tokens`**: List all tokens.
+- **POST `/api/enrollment-tokens`**: Create a new token (Bootstrap or RegCode).
+    - **Input**: `{ "type": "BOOTSTRAP", "maxUses": 100, "expiresInDays": 30, "scopeGroupId": "..." }`
+- **DELETE `/api/enrollment-tokens/{id}`**: Revoke a token.
+
+## 3. Enrollment State Machine
+
+`NEW` (Unregistered) -> `ENROLLING` (Contacting API) -> `ENROLLED` (DB Record Created) -> `CERT_ISSUED` (PFX Received) -> `ONLINE` (Heartbeat Active)
+
+FAILED States:
+- `REVOKED`: Admin revoked device or cert.
+- `EXPIRED`: Cert expired.
+
+## 4. Local Run Steps
+
+### Requirements
+- Java 17+, Maven
+- Node.js 18+
+- Docker (for PostgreSQL)
+
+### Steps
+1.  **Start DB**: `docker-compose up -d`
+2.  **Start Backend**: `mvn clean spring-boot:run` (Migrations run automatically).
+3.  **Start Frontend**: `npm run dev` (Access at `http://localhost:5173`).
+4.  **Login**: Use `admin` / `password`.
+
+### Verification Scenarios
+**Scenario A: Zero-Touch Mock (Bootstrap)**
+1.  Go to `http://localhost:5173/admin/enrollment`.
+2.  Create a "BOOTSTRAP" token.
+3.  (Simulate Client): POST to `/api/enroll` with that token.
+4.  Check `Devices` list to see new device.
+
+**Scenario B: Manual Registration (Code)**
+1.  Create "REGCODE" token (e.g. `REG-123`).
+2.  Use Client/Postman to POST `/api/enroll` with `token: "REG-123"`.
+3.  Verify Token usage count increases to 1 in Portal.
 
