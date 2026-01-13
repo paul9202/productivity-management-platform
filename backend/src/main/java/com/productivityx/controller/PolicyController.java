@@ -1,19 +1,16 @@
 package com.productivityx.controller;
 
-import com.productivityx.model.PolicySettings;
-import com.productivityx.repository.PolicySettingsRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/policies")
 public class PolicyController {
 
-    @Autowired
-    private PolicySettingsRepository policyRepository;
-
+    // Todo: Implement M2 Policy Logic
+    
     @GetMapping
-    public PolicySettings getPolicy() {
-        return policyRepository.findAll().stream().findFirst().orElse(null);
+    public Map<String, Object> getPolicy() {
+        return Map.of(); // Return empty object for now to satisfy frontend contract
     }
 }
