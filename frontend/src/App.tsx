@@ -19,12 +19,25 @@ const App: React.FC = () => {
                     <Routes>
                         <Route path="/login" element={<Login />} />
 
-                        <Route element={<RequireAuth />}>
+                        {/* Shared Routes (Employee+) */}
+                        <Route element={<RequireAuth allowedRoles={['ADMIN', 'MANAGER', 'EMPLOYEE']} />}>
                             <Route path="/" element={<Layout />}>
                                 <Route index element={<Dashboard />} />
+                                <Route path="alerts" element={<Alerts />} />
+                            </Route>
+                        </Route>
+
+                        {/* Manager Routes */}
+                        <Route element={<RequireAuth allowedRoles={['ADMIN', 'MANAGER']} />}>
+                            <Route path="/" element={<Layout />}>
                                 <Route path="employees" element={<Employees />} />
                                 <Route path="departments" element={<Departments />} />
-                                <Route path="alerts" element={<Alerts />} />
+                            </Route>
+                        </Route>
+
+                        {/* Admin Only Routes */}
+                        <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
+                            <Route path="/" element={<Layout />}>
                                 <Route path="policies" element={<Policies />} />
                             </Route>
                         </Route>

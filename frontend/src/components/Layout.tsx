@@ -1,7 +1,18 @@
 import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Layout: React.FC = () => {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
+
+    const hasRole = (roles: string[]) => user && roles.includes(user.role);
+
     return (
         <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-body)' }}>
             {/* Sidebar */}
@@ -24,26 +35,45 @@ const Layout: React.FC = () => {
                 <nav style={{ flex: 1, padding: '0 12px', marginTop: 12 }}>
                     <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: '#64748b', marginBottom: 8, paddingLeft: 12 }}>Platform</div>
                     <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                        {['Dashboard', 'Employees', 'Departments', 'Alerts', 'Policies'].map(item => (
-                            <li key={item}>
-                                <NavLink
-                                    to={item === 'Dashboard' ? '/' : `/${item.toLowerCase()}`}
-                                    className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-                                >
-                                    {item}
-                                </NavLink>
+                        <li key="Dashboard">
+                            <NavLink to="/" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Dashboard</NavLink>
+                        </li>
+
+                        {(hasRole(['ADMIN', 'MANAGER'])) && (
+                            <>
+                                <li key="Employees">
+                                    <NavLink to="/employees" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Employees</NavLink>
+                                </li>
+                                <li key="Departments">
+                                    <NavLink to="/departments" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Departments</NavLink>
+                                </li>
+                            </>
+                        )}
+
+                        <li key="Alerts">
+                            <NavLink to="/alerts" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Alerts</NavLink>
+                        </li>
+
+                        {(hasRole(['ADMIN'])) && (
+                            <li key="Policies">
+                                <NavLink to="/policies" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Policies</NavLink>
                             </li>
-                        ))}
+                        )}
                     </ul>
                 </nav>
 
                 <div style={{ padding: 24, borderTop: '1px solid #1e293b' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.875rem', fontWeight: 'bold' }}>AD</div>
-                        <div>
-                            <div style={{ fontSize: '0.875rem', fontWeight: 600 }}>Admin User</div>
-                            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Enterprise Plan</div>
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.875rem', fontWeight: 'bold' }}>
+                            {user?.name?.substring(0, 2).toUpperCase() || 'U'}
                         </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '0.875rem', fontWeight: 600, truncate: true }}>{user?.name || 'User'}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{user?.role}</div>
+                        </div>
+                        <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }} title="Logout">
+                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                        </button>
                     </div>
                 </div>
             </aside>
