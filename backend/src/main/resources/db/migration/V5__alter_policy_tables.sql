@@ -23,6 +23,10 @@ ALTER TABLE policy_acks RENAME COLUMN id TO ack_id;
 ALTER TABLE policy_acks RENAME COLUMN policy_version_id TO version_id;
 ALTER TABLE policy_acks ADD COLUMN IF NOT EXISTS policy_id UUID;
 ALTER TABLE policy_acks ADD COLUMN IF NOT EXISTS synced_at TIMESTAMP;
+ALTER TABLE policy_acks ADD COLUMN IF NOT EXISTS acknowledged_at TIMESTAMP;
+
+-- Migrate old updated_at to acknowledged_at if it exists (Optional best effort)
+UPDATE policy_acks SET acknowledged_at = updated_at WHERE acknowledged_at IS NULL AND updated_at IS NOT NULL;
 
 -- Populate policy_id in acks
 UPDATE policy_acks pa 
