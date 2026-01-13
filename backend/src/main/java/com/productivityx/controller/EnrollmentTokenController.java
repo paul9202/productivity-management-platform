@@ -27,6 +27,15 @@ public class EnrollmentTokenController {
         // Init default values
         token.setCreatedAt(LocalDateTime.now());
         token.setUsedCount(0);
+        if (token.getCreatedBy() == null) {
+            token.setCreatedBy(UUID.fromString("00000000-0000-0000-0000-000000000000")); // System User
+        }
+        
+        // Handle "current-tenant-id" from frontend or missing value
+        if (token.getScopeTenantId() == null) {
+             token.setScopeTenantId(UUID.fromString("00000000-0000-0000-0000-000000000000")); // Default Tenant
+        }
+
         // Generate a random token secret if not provided (mock)
         if (token.getToken() == null || token.getToken().isEmpty()) {
             token.setToken(UUID.randomUUID().toString().substring(0, 8)); // Simple token

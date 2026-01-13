@@ -21,7 +21,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable()) // Disable CSRF for simple REST API
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/**").permitAll() // Allow all API calls for demo
+                .requestMatchers("/api/**", "/error").permitAll() // Allow all API calls + Error page
                 .anyRequest().authenticated()
             );
         return http.build();
