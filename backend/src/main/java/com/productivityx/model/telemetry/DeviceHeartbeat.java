@@ -34,4 +34,7 @@ public class DeviceHeartbeat {
 
     @Column(name = "upload_error_count")
     private Integer uploadErrorCount;
+
+    @Column(name = "ingest_batch_id")
+    private UUID ingestBatchId;
 }

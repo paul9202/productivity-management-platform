@@ -41,4 +41,7 @@ public class AppUsageEvent {
 
     @Column(name = "category")
     private String category;
+
+    @Column(name = "ingest_batch_id")
+    private UUID ingestBatchId;
 }

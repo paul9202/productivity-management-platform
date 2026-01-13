@@ -35,4 +35,7 @@ public class WebUsageEvent {
 
     private String domain;
     private String category;
+
+    @Column(name = "ingest_batch_id")
+    private UUID ingestBatchId;
 }

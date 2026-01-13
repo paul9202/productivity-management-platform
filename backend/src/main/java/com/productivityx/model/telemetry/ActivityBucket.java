@@ -53,4 +53,7 @@ public class ActivityBucket {
 
     @Column(name = "top_domain")
     private String topDomain;
+
+    @Column(name = "ingest_batch_id")
+    private UUID ingestBatchId;
 }
