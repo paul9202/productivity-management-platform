@@ -60,8 +60,8 @@ const Enrollment: React.FC = () => {
                 type: formData.type as 'BOOTSTRAP' | 'REGCODE',
                 scopeGroupId: formData.scopeGroupId || undefined,
                 maxUses: formData.type === 'REGCODE' ? 1 : formData.maxUses,
-                expiresAt: expires.toISOString(),
-                scopeTenantId: 'current-tenant-id' // Backend handles this usually
+                expiresAt: expires.toISOString()
+                // scopeTenantId omitted, backend will default it
             });
 
             setCreatedToken(newToken);
