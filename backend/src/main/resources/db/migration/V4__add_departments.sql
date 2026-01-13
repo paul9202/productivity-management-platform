@@ -1,4 +1,7 @@
 -- M1: Add Departments
+-- Drop the table if it exists (from V2 seed) to allow recreation with correct schema
+DROP TABLE IF EXISTS departments CASCADE;
+
 CREATE TABLE IF NOT EXISTS departments (
     id UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
