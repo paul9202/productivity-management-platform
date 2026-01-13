@@ -21,7 +21,7 @@ public class DeviceController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Device> updateDevice(@PathVariable java.util.UUID id, @RequestBody Device device) {
+    public ResponseEntity<Device> updateDevice(@PathVariable String id, @RequestBody Device device) {
         return deviceRepository.findById(id)
             .map(existing -> {
                 existing.setName(device.getName());
@@ -33,7 +33,7 @@ public class DeviceController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDevice(@PathVariable java.util.UUID id) {
+    public ResponseEntity<Void> deleteDevice(@PathVariable String id) {
         deviceRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
