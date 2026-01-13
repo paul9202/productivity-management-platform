@@ -8,8 +8,13 @@ ALTER TABLE devices ADD COLUMN IF NOT EXISTS ack_status VARCHAR(50);
 -- status and last_seen_at usually already exist, ensuring columns and constraints
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_ack_status') THEN
+        -- Normalize existing data if necessary (though field is new, safe to ensure)
         ALTER TABLE devices ADD CONSTRAINT chk_ack_status CHECK (ack_status IN ('PENDING', 'APPLIED', 'FAILED'));
     END IF;
+    
+    -- Fix invalid status values before adding the constraint
+    UPDATE devices SET status = 'OFFLINE' WHERE status NOT IN ('ONLINE', 'OFFLINE') OR status IS NULL;
+    
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_status') THEN
         ALTER TABLE devices ADD CONSTRAINT chk_status CHECK (status IN ('ONLINE', 'OFFLINE'));
     END IF;
