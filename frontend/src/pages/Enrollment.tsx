@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useApi } from '../api';
 import { EnrollmentToken, DeviceGroup } from '../types';
-import { Plus, Trash2, Copy, RefreshCw, Key, Shield } from 'lucide-react';
-import Modal from '../components/Modal';
+import { Plus, Trash2, Copy, Key, Shield } from 'lucide-react';
+import { Modal } from '../components/Modal';
 
 const Enrollment: React.FC = () => {
     const api = useApi();

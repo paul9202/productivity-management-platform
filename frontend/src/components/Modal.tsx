@@ -8,9 +8,10 @@ interface ModalProps {
     title: string;
     children: React.ReactNode;
     size?: 'sm' | 'md' | 'lg';
+    footer?: React.ReactNode;
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md', footer }) => {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
@@ -51,6 +52,11 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
                 <div className="modal-body">
                     {children}
                 </div>
+                {footer && (
+                    <div className="modal-footer">
+                        {footer}
+                    </div>
+                )}
             </div>
         </div>,
         document.body
