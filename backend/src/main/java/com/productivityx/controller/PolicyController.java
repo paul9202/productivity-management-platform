@@ -90,4 +90,9 @@ public class PolicyController {
              return ResponseEntity.ok(policyRepository.save(policy));
         }).orElse(ResponseEntity.notFound().build());
     }
+    @GetMapping("/{id}/versions/{versionId}/acks")
+    public ResponseEntity<List<com.productivityx.model.PolicyAck>> listAcks(@PathVariable UUID id, @PathVariable UUID versionId) {
+        // In a real app, we might verify versionId belongs to policyId
+        return ResponseEntity.ok(ackRepository.findByPolicyIdAndVersionId(id, versionId)); 
+    }
 }

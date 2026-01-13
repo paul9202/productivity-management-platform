@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Policy, PolicyVersion } from '../types';
-import { Save, RotateCcw, Shield, Eye, Bell } from 'lucide-react';
+import { Save, RotateCcw, Shield, Eye, Bell, History } from 'lucide-react';
 import { useApi } from '../api';
+import PolicyHistory from './PolicyHistory';
 
 interface PolicyEditorProps {
     policy: Policy;
@@ -12,7 +13,7 @@ interface PolicyEditorProps {
 
 const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy, initialVersion, onSave, onCancel }) => {
     const api = useApi();
-    const [activeTab, setActiveTab] = useState<'general' | 'blocking' | 'alerts'>('general');
+    const [activeTab, setActiveTab] = useState<'general' | 'blocking' | 'alerts' | 'history'>('general');
     const [config, setConfig] = useState<any>({
         idleTimeoutMinutes: 15,
         workHours: { start: '09:00', end: '17:00' },
@@ -94,6 +95,15 @@ const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy, initialVersion, onS
                         <Bell size={16} /> Alerts
                     </div>
                 </button>
+                <button
+                    className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('history')}
+                    style={{ padding: '12px 16px', background: 'none', border: 'none', borderBottom: activeTab === 'history' ? '2px solid var(--primary)' : '2px solid transparent', cursor: 'pointer', fontWeight: 500 }}
+                >
+                    <div className="flex-row gap-xs">
+                        <History size={16} /> History
+                    </div>
+                </button>
             </div>
 
             <div className="editor-content" style={{ padding: 24 }}>
@@ -138,6 +148,12 @@ const PolicyEditor: React.FC<PolicyEditorProps> = ({ policy, initialVersion, onS
                             <option value="medium">Medium (Standard productivity)</option>
                             <option value="high">High (Strict monitoring)</option>
                         </select>
+                    </div>
+                )}
+
+                {activeTab === 'history' && (
+                    <div className="form-section">
+                        <PolicyHistory policyId={policy.id} />
                     </div>
                 )}
             </div>

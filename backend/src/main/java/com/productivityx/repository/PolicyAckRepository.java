@@ -6,4 +6,5 @@ import java.util.UUID;
 
 public interface PolicyAckRepository extends JpaRepository<PolicyAck, UUID> {
     void deleteByPolicyId(UUID policyId);
+    java.util.List<PolicyAck> findByPolicyIdAndVersionId(UUID policyId, UUID versionId);
 }

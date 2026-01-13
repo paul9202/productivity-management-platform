@@ -108,3 +108,14 @@ export interface PolicyVersion {
     createdAt: string;
     createdBy?: string;
 }
+
+export interface PolicyAck {
+    id: string;
+    policyId: string;
+    versionId: string;
+    deviceId: string;
+    status: 'PENDING' | 'APPLIED' | 'FAILED';
+    message?: string;
+    acknowledgedAt?: string;
+    syncedAt?: string;
+}

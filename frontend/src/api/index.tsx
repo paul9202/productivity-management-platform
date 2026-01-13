@@ -1,5 +1,5 @@
 import {
-    DashboardSummary, Department, Employee, AlertEvent, PolicySettings, Device, DeviceGroup, Policy, PolicyVersion
+    DashboardSummary, Department, Employee, AlertEvent, PolicySettings, Device, DeviceGroup, Policy, PolicyVersion, PolicyAck
 } from '../types';
 import { LoginRequest, LoginResponse } from '../types/auth';
 import { MOCK_ALERTS, MOCK_DASHBOARD, MOCK_DEPARTMENTS, MOCK_EMPLOYEES, MOCK_POLICY } from '../mock/mockData';
@@ -41,7 +41,9 @@ export interface ApiClient {
     listPolicyVersions(policyId: string): Promise<PolicyVersion[]>;
     createPolicyVersion(policyId: string, version: Partial<PolicyVersion>): Promise<PolicyVersion>;
     publishPolicyVersion(policyId: string, versionId: string): Promise<Policy>;
+    publishPolicyVersion(policyId: string, versionId: string): Promise<Policy>;
     deletePolicy(id: string): Promise<void>;
+    listPolicyAcks(policyId: string, versionId: string): Promise<PolicyAck[]>;
 }
 
 class MockApiClient implements ApiClient {
@@ -94,6 +96,12 @@ class MockApiClient implements ApiClient {
     }
     async deletePolicy(_id: string): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, 300));
+    }
+    async listPolicyAcks(policyId: string, versionId: string): Promise<PolicyAck[]> {
+        return new Promise(resolve => setTimeout(() => resolve([
+            { id: 'ack1', policyId, versionId, deviceId: 'dev-1', status: 'APPLIED', acknowledgedAt: new Date().toISOString() },
+            { id: 'ack2', policyId, versionId, deviceId: 'dev-2', status: 'PENDING', message: 'Device offline' }
+        ]), 300));
     }
     async listDevices(): Promise<Device[]> {
         return new Promise(resolve => setTimeout(() => resolve([
@@ -355,6 +363,11 @@ class HttpApiClient implements ApiClient {
     async deletePolicy(id: string): Promise<void> {
         const res = await fetch(`/api/policies/${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Failed to delete policy');
+    }
+    async listPolicyAcks(policyId: string, versionId: string): Promise<PolicyAck[]> {
+        const res = await fetch(`/api/policies/${policyId}/versions/${versionId}/acks`);
+        if (!res.ok) throw new Error('Failed to list ACKs');
+        return res.json();
     }
 }
 
