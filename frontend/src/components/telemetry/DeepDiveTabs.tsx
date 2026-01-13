@@ -6,9 +6,11 @@ import { File, Globe, AppWindow, MessageSquare, Shield, Filter } from 'lucide-re
 
 interface Props {
     events: TelemetryEvent[];
+    loading?: boolean;
+    onFilterChange: (filter: any) => void;
 }
 
-export const DeepDiveTabs: React.FC<Props> = ({ events }) => {
+export const DeepDiveTabs: React.FC<Props> = ({ events, loading }) => {
     const [activeTab, setActiveTab] = useState<'APPS' | 'WEB' | 'FILES' | 'IM' | 'BLOCKS'>('APPS');
     const [filter, setFilter] = useState('');
 
@@ -30,8 +32,13 @@ export const DeepDiveTabs: React.FC<Props> = ({ events }) => {
     const TabButton = ({ id, label, icon: Icon }: any) => (
         <button
             onClick={() => setActiveTab(id)}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors
-                ${activeTab === id ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                padding: '0.75rem 1rem', fontSize: '0.875rem', fontWeight: 500,
+                border: 'none', background: 'none', cursor: 'pointer',
+                borderBottom: activeTab === id ? '2px solid var(--primary)' : '2px solid transparent',
+                color: activeTab === id ? 'var(--primary)' : 'var(--text-muted)'
+            }}
         >
             <Icon size={16} />
             {label}
@@ -39,10 +46,10 @@ export const DeepDiveTabs: React.FC<Props> = ({ events }) => {
     );
 
     return (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm min-h-[400px]">
+        <div>
             {/* Tabs Header */}
-            <div className="flex justify-between items-center border-b border-gray-100 px-4">
-                <div className="flex gap-2">
+            <div className="flex-row space-between" style={{ borderBottom: '1px solid var(--border-subtle)', padding: '0 1rem' }}>
+                <div className="flex-row gap-sm">
                     <TabButton id="APPS" label="Apps" icon={AppWindow} />
                     <TabButton id="WEB" label="Web" icon={Globe} />
                     <TabButton id="FILES" label="Files" icon={File} />
@@ -50,80 +57,81 @@ export const DeepDiveTabs: React.FC<Props> = ({ events }) => {
                     <TabButton id="BLOCKS" label="Blocks" icon={Shield} />
                 </div>
                 {/* Search */}
-                <div className="relative">
-                    <Filter className="absolute left-3 top-2.5 text-gray-400" size={14} />
+                <div style={{ position: 'relative' }}>
+                    <Filter size={14} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                     <input
                         type="text"
                         placeholder="Filter..."
                         value={filter}
                         onChange={(e) => setFilter(e.target.value)}
-                        className="pl-8 pr-4 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100"
+                        className="input-field"
+                        style={{ paddingLeft: '2rem', paddingTop: '0.5rem', paddingBottom: '0.5rem', width: '200px', fontSize: '0.85rem' }}
                     />
                 </div>
             </div>
 
             {/* Table Content */}
-            <div className="p-0 overflow-auto max-h-[500px]">
-                <table className="w-full text-sm text-left">
-                    <thead className="bg-gray-50 text-gray-500 font-medium sticky top-0">
+            <div style={{ overflowX: 'auto', maxHeight: '500px' }}>
+                <table style={{ margin: 0 }}>
+                    <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
                         <tr>
-                            <th className="px-6 py-3">Time</th>
+                            <th>Time</th>
                             {activeTab === 'APPS' && <>
-                                <th className="px-6 py-3">Application</th>
-                                <th className="px-6 py-3">Category</th>
-                                <th className="px-6 py-3 text-right">Duration</th>
+                                <th>Application</th>
+                                <th>Category</th>
+                                <th style={{ textAlign: 'right' }}>Duration</th>
                             </>}
                             {activeTab === 'WEB' && <>
-                                <th className="px-6 py-3">Domain</th>
-                                <th className="px-6 py-3">Title</th>
-                                <th className="px-6 py-3">Category</th>
+                                <th>Domain</th>
+                                <th>Title</th>
+                                <th>Category</th>
                             </>}
                             {activeTab === 'FILES' && <>
-                                <th className="px-6 py-3">Operation</th>
-                                <th className="px-6 py-3">File Path</th>
-                                <th className="px-6 py-3">Details</th>
+                                <th>Operation</th>
+                                <th>File Path</th>
+                                <th>Details</th>
                             </>}
                             {activeTab === 'IM' && <>
-                                <th className="px-6 py-3">Platform</th>
-                                <th className="px-6 py-3">Keyword Hit</th>
-                                <th className="px-6 py-3">Snippet</th>
+                                <th>Platform</th>
+                                <th>Keyword Hit</th>
+                                <th>Snippet</th>
                             </>}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody>
                         {displayEvents.length === 0 ? (
-                            <tr><td colSpan={5} className="text-center py-8 text-gray-400">No events found</td></tr>
+                            <tr><td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No events found</td></tr>
                         ) : displayEvents.map((e) => {
                             const date = new Date(e.timestamp).toLocaleTimeString();
                             return (
-                                <tr key={e.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-3 text-gray-500 font-mono text-xs">{date}</td>
+                                <tr key={e.id}>
+                                    <td style={{ color: 'var(--text-muted)', fontFamily: 'monospace', fontSize: '0.75rem' }}>{date}</td>
 
                                     {activeTab === 'APPS' && (() => {
                                         const md = (e as AppEvent).metadata;
                                         return <>
-                                            <td className="px-6 py-3 font-medium text-gray-900">{md.appName}</td>
-                                            <td className="px-6 py-3"><span className="px-2 py-1 bg-gray-100 rounded text-xs">{md.category}</span></td>
-                                            <td className="px-6 py-3 text-right text-gray-500">{md.durationSeconds}s</td>
+                                            <td style={{ fontWeight: 500 }}>{md.appName}</td>
+                                            <td><span className="badge badge-neutral">{md.category}</span></td>
+                                            <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>{md.durationSeconds}s</td>
                                         </>;
                                     })()}
 
                                     {activeTab === 'WEB' && (() => {
                                         const md = (e as WebEvent).metadata;
                                         return <>
-                                            <td className="px-6 py-3 text-blue-600 truncate max-w-[200px]">{md.domain}</td>
-                                            <td className="px-6 py-3 text-gray-600 truncate max-w-[300px]">{md.title}</td>
-                                            <td className="px-6 py-3"><span className="px-2 py-1 bg-gray-100 rounded text-xs">{md.category}</span></td>
+                                            <td style={{ color: 'var(--primary)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{md.domain}</td>
+                                            <td style={{ color: 'var(--text-muted)', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{md.title}</td>
+                                            <td><span className="badge badge-neutral">{md.category}</span></td>
                                         </>;
                                     })()}
 
                                     {activeTab === 'FILES' && (() => {
                                         const md = (e as FileEvent).metadata;
                                         return <>
-                                            <td className={`px-6 py-3 font-bold ${md.operation === 'COPY' ? 'text-blue-600' : 'text-gray-700'}`}>{md.operation}</td>
-                                            <td className="px-6 py-3 text-gray-600 font-mono text-xs truncate max-w-[300px]">{md.filePath}</td>
-                                            <td className="px-6 py-3 text-xs text-gray-500">
-                                                {md.isUsb && <span className="text-red-600 font-bold mr-2">USB</span>}
+                                            <td style={{ fontWeight: 'bold', color: md.operation === 'COPY' ? 'var(--primary)' : 'inherit' }}>{md.operation}</td>
+                                            <td style={{ color: 'var(--text-muted)', fontFamily: 'monospace', fontSize: '0.8rem', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{md.filePath}</td>
+                                            <td style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                                {md.isUsb && <span className="badge badge-danger" style={{ marginRight: '0.5rem' }}>USB</span>}
                                                 {(md.fileSize / 1024 / 1024).toFixed(1)} MB
                                             </td>
                                         </>;
@@ -132,9 +140,9 @@ export const DeepDiveTabs: React.FC<Props> = ({ events }) => {
                                     {activeTab === 'IM' && (() => {
                                         const md = (e as ImEvent).metadata;
                                         return <>
-                                            <td className="px-6 py-3 font-medium">{md.platform}</td>
-                                            <td className="px-6 py-3 text-red-600 font-bold">{md.keywordHit || '-'}</td>
-                                            <td className="px-6 py-3 text-gray-500 italic truncate max-w-[300px]">"{md.snippet}"</td>
+                                            <td style={{ fontWeight: 500 }}>{md.platform}</td>
+                                            <td style={{ color: 'var(--danger)', fontWeight: 'bold' }}>{md.keywordHit || '-'}</td>
+                                            <td style={{ color: 'var(--text-muted)', fontStyle: 'italic', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>"{md.snippet}"</td>
                                         </>;
                                     })()}
                                 </tr>
