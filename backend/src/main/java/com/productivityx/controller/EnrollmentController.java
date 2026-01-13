@@ -133,4 +133,33 @@ public class EnrollmentController {
         private String error;
         public ErrorResponse(String e) { error = e; }
     }
+    // --- Management Endpoints (Admin Portal) ---
+
+    @GetMapping("/enrollment-tokens")
+    public java.util.List<EnrollmentToken> listTokens() {
+        return tokenRepository.findAll();
+    }
+
+    @PostMapping("/enrollment-tokens")
+    public EnrollmentToken createToken(@RequestBody EnrollmentToken token) {
+        // Init default values
+        token.setCreatedAt(LocalDateTime.now());
+        token.setUsedCount(0);
+        // Generate a random token secret if not provided (mock)
+        if (token.getToken() == null) {
+            token.setToken(UUID.randomUUID().toString().substring(0, 8)); // Simple token
+        }
+        // Hash it (mock: store as is because we verify 'as is' in enrollDevice)
+        token.setTokenHash(token.getToken()); 
+        
+        return tokenRepository.save(token);
+    }
+
+    @DeleteMapping("/enrollment-tokens/{id}")
+    public void revokeToken(@PathVariable UUID id) {
+        tokenRepository.findById(id).ifPresent(t -> {
+            t.setRevokedAt(LocalDateTime.now());
+            tokenRepository.save(t);
+        });
+    }
 }
