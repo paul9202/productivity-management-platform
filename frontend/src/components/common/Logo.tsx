@@ -51,7 +51,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 32, showText = true }) => {
 
             {showText && (
                 <div style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.025em', display: 'flex', alignItems: 'baseline' }}>
-                    <span style={{ color: 'white' }}>Productivity</span>
+                    <span style={{ color: 'inherit' }}>Productivity</span>
                     <span style={{ color: '#a855f7', marginLeft: '1px' }}>-X</span>
                 </div>
             )}
