@@ -22,7 +22,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (stored) {
             try {
                 const parsed = JSON.parse(stored);
-                setState({ ...parsed, isAuthenticated: true });
+                // Simple validation: check if token exists
+                if (parsed.token) {
+                    setState({ ...parsed, isAuthenticated: true });
+                } else {
+                    localStorage.removeItem(STORAGE_KEY);
+                }
             } catch (e) {
                 localStorage.removeItem(STORAGE_KEY);
             }

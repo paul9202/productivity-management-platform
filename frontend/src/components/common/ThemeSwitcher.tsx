@@ -14,7 +14,7 @@ export const ThemeSwitcher: React.FC = () => {
         grape: <Grape size={16} />
     };
 
-    const themes: Theme[] = ['system', 'light', 'dark', 'ocean', 'grape'];
+    const themes: Theme[] = ['system', 'light', 'dark'];
 
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'var(--bg-body)', padding: '0.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>

@@ -29,7 +29,7 @@
 }
 
 [data-theme='light'] {
-    /* Full Definition for Light */
+    /* Explicit Light Mode */
     --bg-body: #f8fafc;
     --bg-surface: #ffffff;
     --bg-sidebar: #0f172a;
@@ -43,7 +43,7 @@
 }
 
 [data-theme='dark'] {
-    /* Full Definition for Dark */
+    /* Explicit Dark Mode */
     --bg-body: #0f172a;
     --bg-surface: #1e293b;
     --bg-sidebar: #020617;
@@ -69,65 +69,26 @@
     --danger-text: #fee2e2;
 }
 
+/* 
+   Ocean and Grape are preserved in CSS if we want them back, 
+   but removed from switcher for simplification.
+*/
 [data-theme='ocean'] {
-    /* Full Definition for Ocean */
     --bg-body: #ecfeff;
-    /* Distinct Cyan Tint */
     --bg-surface: #ffffff;
     --bg-sidebar: #0e7490;
-    /* Cyan 700 - Visible change from slate */
-
     --text-main: #0e7490;
-    --text-muted: #155e75;
-    --text-light: #bfdbfe;
-
     --primary: #06b6d4;
-    /* Cyan 500 */
     --primary-fg: #ffffff;
-    --primary-hover: #0891b2;
-
     --border: #67e8f9;
-    /* Cyan 300 - More visible borders */
-    --border-focus: #22d3ee;
-
-    /* Semantics */
-    --success-bg: #ccfbf1;
-    --success-text: #0f766e;
-    --warning-bg: #fef3c7;
-    --warning-text: #92400e;
-    --danger: #ef4444;
-    --danger-bg: #fee2e2;
-    --danger-text: #991b1b;
 }
 
 [data-theme='grape'] {
-    /* Full Definition for Grape */
     --bg-body: #fdf4ff;
-    /* Distinct Purple Tint */
     --bg-surface: #ffffff;
     --bg-sidebar: #701a75;
-    /* Fuchsia 800 - Visible change from slate */
-
     --text-main: #4a044e;
-    /* darker purple for contrast */
-    --text-muted: #86198f;
-    --text-light: #e879f9;
-
     --primary: #d946ef;
-    /* Fuchsia 500 */
     --primary-fg: #ffffff;
-    --primary-hover: #c026d3;
-
     --border: #f0abfc;
-    /* Fuchsia 300 */
-    --border-focus: #e879f9;
-
-    /* Semantics */
-    --success-bg: #dcfce7;
-    --success-text: #166534;
-    --warning-bg: #fef9c3;
-    --warning-text: #854d0e;
-    --danger: #ef4444;
-    --danger-bg: #fee2e2;
-    --danger-text: #991b1b;
 }
