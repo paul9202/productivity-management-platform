@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from './common/LanguageSwitcher';
 import { ThemeSwitcher } from './common/ThemeSwitcher';
+import { Logo } from './common/Logo';
 
 const Layout: React.FC = () => {
     const { user, logout } = useAuth();
@@ -31,10 +32,13 @@ const Layout: React.FC = () => {
                 height: '100vh',
                 borderRight: '1px solid var(--border)'
             }}>
-                <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg, #6366f1, #a855f7)', borderRadius: 8 }}></div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.025em' }}>Focus<span style={{ color: '#a855f7' }}>OS</span></div>
-                </div>
+                import {Logo} from './common/Logo'; // Add import at top if possible, but replace tool doesn't support multiple chunks easily. Assuming imports are managed or I do valid TSX replacement.
+                // Wait, I need to add the import line separately or assume I can do it here.
+                // Let's replace the whole 'Layout' definition start or just the logo part and hope for no import error (unlikely).
+                // I should add the import first.
+
+                // Let's do a 2-step or just use replace_file_content on the import section if I can.
+                // Actually, I'll just replace the logo part and then add the import.
 
                 <nav style={{ flex: 1, padding: '0 12px', marginTop: 12 }}>
                     <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: '#64748b', marginBottom: 8, paddingLeft: 12 }}>{t('app.description')}</div>
