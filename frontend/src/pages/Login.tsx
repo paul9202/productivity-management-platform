@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '../components/common/LanguageSwitcher';
+import { Logo } from '../components/common/Logo';
 
 const Login: React.FC = () => {
     const { t } = useTranslation();
@@ -37,10 +38,9 @@ const Login: React.FC = () => {
                 <LanguageSwitcher />
             </div>
             <div className="card" style={{ width: 400, padding: 40 }}>
-                <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                    <div style={{ width: 48, height: 48, background: 'linear-gradient(135deg, #6366f1, #a855f7)', borderRadius: 12, margin: '0 auto 16px' }}></div>
-                    <h2>{t('app.title')}</h2>
-                    <div style={{ color: 'var(--text-muted)' }}>{t('pages.login.title')}</div>
+                <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <Logo size={48} showText={true} />
+                    <div style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>{t('pages.login.title')}</div>
                 </div>
 
                 <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
