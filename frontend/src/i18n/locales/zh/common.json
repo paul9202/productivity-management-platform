@@ -1,0 +1,43 @@
+{
+    "app": {
+        "title": "Productivity-X",
+        "description": "企业设备管理平台"
+    },
+    "nav": {
+        "dashboard": "仪表板",
+        "devices": "设备列表",
+        "enrollment": "设备注册",
+        "policies": "策略管理",
+        "admin": "系统管理",
+        "settings": "设置"
+    },
+    "header": {
+        "search_placeholder": "搜索...",
+        "profile": "个人资料",
+        "logout": "退出登录"
+    },
+    "pages": {
+        "login": {
+            "title": "登录",
+            "email_label": "电子邮箱",
+            "password_label": "密码",
+            "submit": "登录",
+            "forgot_password": "忘记密码？",
+            "no_account": "还没有账号？立即注册"
+        },
+        "dashboard": {
+            "title": "高管概览",
+            "kpi_active": "活跃时间",
+            "kpi_score": "生产力评分",
+            "kpi_risk": "安全风险",
+            "kpi_online": "设备状态",
+            "snapshot_title": "管理快照"
+        }
+    },
+    "actions": {
+        "save": "保存",
+        "cancel": "取消",
+        "delete": "删除",
+        "confirm": "确认"
+    }
+}

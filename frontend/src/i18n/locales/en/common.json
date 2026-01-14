@@ -1,0 +1,43 @@
+{
+    "app": {
+        "title": "Productivity-X",
+        "description": "Enterprise Fleet Management"
+    },
+    "nav": {
+        "dashboard": "Dashboard",
+        "devices": "Devices",
+        "enrollment": "Enrollment",
+        "policies": "Policies",
+        "admin": "Admin",
+        "settings": "Settings"
+    },
+    "header": {
+        "search_placeholder": "Search...",
+        "profile": "Profile",
+        "logout": "Logout"
+    },
+    "pages": {
+        "login": {
+            "title": "Sign In",
+            "email_label": "Email",
+            "password_label": "Password",
+            "submit": "Login",
+            "forgot_password": "Forgot password?",
+            "no_account": "Don't have an account? Sign up"
+        },
+        "dashboard": {
+            "title": "Executive Overview",
+            "kpi_active": "Active Time",
+            "kpi_score": "Productivity Score",
+            "kpi_risk": "Security Risks",
+            "kpi_online": "Device Status",
+            "snapshot_title": "Manager Snapshot"
+        }
+    },
+    "actions": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "confirm": "Confirm"
+    }
+}

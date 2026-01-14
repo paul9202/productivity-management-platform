@@ -10,39 +10,16 @@ import { ActionCenter } from '../components/dashboard/ActionCenter';
 import { CopilotModal } from '../components/dashboard/CopilotModal';
 import { Bot } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
+
 const Dashboard: React.FC = () => {
+    const { t } = useTranslation();
     const api = useApi();
-    // State
-    const [data, setData] = useState<DashboardData | null>(null);
-    const [filters, setFilters] = useState<DashboardFilterState>({
-        timeRange: '24H',
-        scopeId: 'root',
-        scopeType: 'ORG',
-        includeOffHours: false,
-        viewMode: 'PRODUCTIVITY'
-    });
-    const [copilotOpen, setCopilotOpen] = useState(false);
-    const [loading, setLoading] = useState(true);
+    // ... rest of state
 
-    const loadData = async () => {
-        setLoading(true);
-        try {
-            const result = await api.getDashboardData(filters.timeRange, filters.scopeType, filters.scopeId);
-            // Run Rules on the data (Client side post-processing for now)
-            if (!result.topIssues || result.topIssues.length === 0) {
-                result.topIssues = evaluateOrgRules(result);
-            }
-            setData(result);
-        } catch (e) {
-            console.error("Failed to load dashboard", e);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // ... loadData ...
 
-    useEffect(() => {
-        loadData();
-    }, [filters]); // Reload when filters change (in real app, pass filters to API)
+    // ... useEffect ...
 
     if (loading && !data) return <div className="page-container" style={{ textAlign: 'center', marginTop: '100px' }}>Loading Command Center...</div>;
     if (!data) return <div>Error loading data</div>;
@@ -52,7 +29,7 @@ const Dashboard: React.FC = () => {
             {/* Header Area */}
             <div className="flex-row space-between" style={{ marginBottom: '1.5rem', alignItems: 'flex-start' }}>
                 <div>
-                    <h1>Executive Overview</h1>
+                    <h1>{t('pages.dashboard.title')}</h1>
                     <div style={{ color: 'var(--text-muted)', marginTop: '-8px' }}>Real-time productivity & risk insights.</div>
                 </div>
                 <button

@@ -1,41 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import './theme/themes.css';
 
 :root {
-    /* Premium Palette (Deep Slate & Vibrant Indigo) */
-    --primary: #6366f1;
-    /* Indigo 500 */
-    --primary-hover: #4f46e5;
-    /* Indigo 600 */
-    --primary-light: #e0e7ff;
-    /* Indigo 100 */
-
-    --bg-body: #f8fafc;
-    /* Slate 50 */
-    --bg-surface: #ffffff;
-    --bg-sidebar: #0f172a;
-    /* Slate 900 */
-    --bg-glass: rgba(255, 255, 255, 0.8);
-
-    --text-main: #1e293b;
-    /* Slate 800 */
-    --text-muted: #64748b;
-    /* Slate 500 */
-    --text-light: #94a3b8;
-    /* Slate 400 */
-    --text-on-dark: #f8fafc;
-
-    --border: #e2e8f0;
-    /* Slate 200 */
-    --border-focus: #a5b4fc;
-    /* Indigo 300 */
-
-    --success-bg: #dcfce7;
-    --success-text: #166534;
-    --warning-bg: #fef9c3;
-    --warning-text: #854d0e;
-    --danger: #ef4444;
-    --danger-bg: #fee2e2;
-    --danger-text: #991b1b;
+    /* Common variables (layout, fonts) */
+    --header-height: 72px;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
     --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -43,23 +12,18 @@
 
     --radius-sm: 0.375rem;
     --radius-md: 0.5rem;
-    /* 8px */
     --radius-lg: 0.75rem;
-    /* 12px */
     --radius-xl: 1rem;
-    /* 16px */
-
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --header-height: 72px;
 }
 
 body {
     margin: 0;
     font-family: var(--font-sans);
-    background-color: var(--bg-body);
-    color: var(--text-main);
+    background-color: var(--bg);
+    color: var(--fg);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 * {

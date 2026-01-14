@@ -1,0 +1,106 @@
+:root {
+    /* --- Base Variables (Default / Light) --- */
+    --bg-body: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-sidebar: #0f172a;
+
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
+    --text-on-dark: #f8fafc;
+
+    --primary: #4f46e5;
+    --primary-fg: #ffffff;
+    --primary-hover: #4338ca;
+
+    --border: #e2e8f0;
+    --border-focus: #a5b4fc;
+
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+
+    /* Semantic Colors */
+    --success-bg: #dcfce7;
+    --success-text: #166534;
+    --warning-bg: #fef9c3;
+    --warning-text: #854d0e;
+    --danger: #ef4444;
+    --danger-bg: #fee2e2;
+    --danger-text: #991b1b;
+}
+
+[data-theme='light'] {
+    /* Full Definition for Light */
+    --bg-body: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-sidebar: #0f172a;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
+    --primary: #4f46e5;
+    --primary-fg: #ffffff;
+    --primary-hover: #4338ca;
+    --border: #e2e8f0;
+}
+
+[data-theme='dark'] {
+    /* Full Definition for Dark */
+    --bg-body: #0f172a;
+    --bg-surface: #1e293b;
+    --bg-sidebar: #020617;
+
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-light: #64748b;
+
+    --primary: #6366f1;
+    --primary-fg: #ffffff;
+    --primary-hover: #818cf8;
+
+    --border: #334155;
+    --border-focus: #4f46e5;
+
+    /* Adjusted semantics for dark */
+    --success-bg: #064e3b;
+    --success-text: #d1fae5;
+    --warning-bg: #451a03;
+    --warning-text: #fef3c7;
+    --danger: #ef4444;
+    --danger-bg: #7f1d1d;
+    --danger-text: #fee2e2;
+}
+
+[data-theme='ocean'] {
+    /* Full Definition for Ocean */
+    --bg-body: #ecfeff;
+    --bg-surface: #ffffff;
+    --bg-sidebar: #164e63;
+
+    --text-main: #0e7490;
+    --text-muted: #0891b2;
+    --text-light: #67e8f9;
+
+    --primary: #06b6d4;
+    --primary-fg: #ffffff;
+    --primary-hover: #0891b2;
+
+    --border: #a5f3fc;
+    --border-focus: #22d3ee;
+}
+
+[data-theme='grape'] {
+    /* Full Definition for Grape */
+    --bg-body: #fdf4ff;
+    --bg-surface: #ffffff;
+    --bg-sidebar: #4a044e;
+
+    --text-main: #701a75;
+    --text-muted: #a21caf;
+    --text-light: #e879f9;
+
+    --primary: #d946ef;
+    --primary-fg: #ffffff;
+    --primary-hover: #c026d3;
+
+    --border: #f0abfc;
+    --border-focus: #e879f9;
+}

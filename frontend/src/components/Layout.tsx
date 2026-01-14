@@ -1,10 +1,14 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from './common/LanguageSwitcher';
+import { ThemeSwitcher } from './common/ThemeSwitcher';
 
 const Layout: React.FC = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const handleLogout = () => {
         logout();
@@ -25,7 +29,7 @@ const Layout: React.FC = () => {
                 position: 'sticky',
                 top: 0,
                 height: '100vh',
-                borderRight: '1px solid #1e293b'
+                borderRight: '1px solid var(--border)'
             }}>
                 <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg, #6366f1, #a855f7)', borderRadius: 8 }}></div>
@@ -33,17 +37,17 @@ const Layout: React.FC = () => {
                 </div>
 
                 <nav style={{ flex: 1, padding: '0 12px', marginTop: 12 }}>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: '#64748b', marginBottom: 8, paddingLeft: 12 }}>Platform</div>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: '#64748b', marginBottom: 8, paddingLeft: 12 }}>{t('app.description')}</div>
                     <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                         <li key="Dashboard">
-                            <NavLink to="/" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Dashboard</NavLink>
+                            <NavLink to="/" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>{t('nav.dashboard')}</NavLink>
                         </li>
 
                         <li key="Devices">
-                            <NavLink to="/devices" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Devices</NavLink>
+                            <NavLink to="/devices" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>{t('nav.devices')}</NavLink>
                         </li>
                         <li key="DeviceGroups">
-                            <NavLink to="/device-groups" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Groups</NavLink>
+                            <NavLink to="/device-groups" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>{t('nav.devices')} (Groups)</NavLink>
                         </li>
 
                         {(hasRole(['ADMIN', 'MANAGER'])) && (
@@ -64,17 +68,17 @@ const Layout: React.FC = () => {
                         {(hasRole(['ADMIN'])) && (
                             <>
                                 <li key="Policies">
-                                    <NavLink to="/policies" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Policies</NavLink>
+                                    <NavLink to="/policies" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>{t('nav.policies')}</NavLink>
                                 </li>
                                 <li key="Enrollment">
-                                    <NavLink to="/enrollment" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>Enrollment</NavLink>
+                                    <NavLink to="/enrollment" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>{t('nav.enrollment')}</NavLink>
                                 </li>
                             </>
                         )}
                     </ul>
                 </nav>
 
-                <div style={{ padding: 24, borderTop: '1px solid #1e293b' }}>
+                <div style={{ padding: 24, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <div style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.875rem', fontWeight: 'bold' }}>
                             {user?.name?.substring(0, 2).toUpperCase() || 'U'}
@@ -83,7 +87,7 @@ const Layout: React.FC = () => {
                             <div style={{ fontSize: '0.875rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.name || 'User'}</div>
                             <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{user?.role}</div>
                         </div>
-                        <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }} title="Logout">
+                        <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }} title={t('header.logout')}>
                             <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                         </button>
                     </div>
@@ -106,13 +110,14 @@ const Layout: React.FC = () => {
                     zIndex: 10
                 }}>
                     {/* Breadcrumbs or Title could go here */}
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Overview / Dashboard</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{t('nav.dashboard')} / Overview</div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                        <LanguageSwitcher />
+                        <ThemeSwitcher />
+                        <div style={{ width: 1, height: 24, backgroundColor: 'var(--border-subtle)' }}></div>
                         <button className="btn-text">Feedback</button>
                         <button className="btn-text">Support</button>
-                        <div style={{ width: 1, height: 24, backgroundColor: 'var(--border-subtle)' }}></div>
-                        <div style={{ fontSize: '0.875rem', fontWeight: 500 }}>v2.0</div>
                     </div>
                 </header>
 
