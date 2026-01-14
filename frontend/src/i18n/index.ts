@@ -9,11 +9,7 @@ const getInitialLanguage = (): string => {
     const saved = localStorage.getItem('lang');
     if (saved === 'en' || saved === 'zh') return saved;
 
-    // 2. Check Browser
-    const browserLang = navigator.language || navigator.languages[0];
-    if (browserLang && browserLang.toLowerCase().startsWith('zh')) return 'zh';
-
-    // 3. Default
+    // 2. Default to English (Ignore browser to force EN as requested default)
     return 'en';
 };
 
