@@ -17,35 +17,34 @@ export const Logo: React.FC<LogoProps> = ({ size = 32, showText = true }) => {
                 xmlns="http://www.w3.org/2000/svg"
             >
                 <defs>
-                    <linearGradient id="logoGradient" x1="0" y1="0" x2="40" y2="40">
-                        <stop offset="0%" stopColor="#8b5cf6" />
-                        <stop offset="100%" stopColor="#4f46e5" />
+                    <linearGradient id="logoAppGradient" x1="0" y1="0" x2="40" y2="40">
+                        <stop offset="0%" stopColor="#6366f1" />
+                        <stop offset="100%" stopColor="#d946ef" />
                     </linearGradient>
-                    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                        <feGaussianBlur stdDeviation="2" result="blur" />
-                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    <filter id="softShadow" x="-2" y="-2" width="44" height="44">
+                        <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#6366f1" floodOpacity="0.3" />
                     </filter>
                 </defs>
 
-                {/* Abstract P shape */}
-                <path
-                    d="M10 8C10 5.79086 11.7909 4 14 4H20C25.5228 4 30 8.47715 30 14V14C30 19.5228 25.5228 24 20 24H14V34C14 36.2091 12.2091 38 10 38C7.79086 38 6 36.2091 6 34V12C6 9.79086 7.79086 8 10 8Z"
-                    fill="url(#logoGradient)"
-                    opacity="0.9"
+                {/* App Icon Container: Modern Rounded Square */}
+                <rect
+                    x="2"
+                    y="2"
+                    width="36"
+                    height="36"
+                    rx="10"
+                    fill="url(#logoAppGradient)"
+                    filter="url(#softShadow)"
                 />
 
-                {/* The "X" cut/overlay */}
+                {/* Abstract 'P' formed by geometric white shapes */}
+                {/* Vertical Stem */}
+                <rect x="12" y="10" width="5" height="20" rx="2.5" fill="white" />
+
+                {/* Curve/Bowl */}
                 <path
-                    d="M34 36L24 26"
-                    stroke="white"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                />
-                <path
-                    d="M34 26L24 36"
-                    stroke="#a855f7"
-                    strokeWidth="4"
-                    strokeLinecap="round"
+                    d="M17 10H20C24.4183 10 28 13.5817 28 18C28 22.4183 24.4183 26 20 26H16V21H20C21.6569 21 23 19.6569 23 18C23 16.3431 21.6569 15 20 15H17V10Z"
+                    fill="white"
                 />
             </svg>
 
