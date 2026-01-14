@@ -15,11 +15,37 @@ import { useTranslation } from 'react-i18next';
 const Dashboard: React.FC = () => {
     const { t } = useTranslation();
     const api = useApi();
-    // ... rest of state
+    // State
+    const [data, setData] = useState<DashboardData | null>(null);
+    const [filters, setFilters] = useState<DashboardFilterState>({
+        timeRange: '24H',
+        scopeId: 'root',
+        scopeType: 'ORG',
+        includeOffHours: false,
+        viewMode: 'PRODUCTIVITY'
+    });
+    const [copilotOpen, setCopilotOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-    // ... loadData ...
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            const result = await api.getDashboardData(filters.timeRange, filters.scopeType, filters.scopeId);
+            // Run Rules on the data (Client side post-processing for now)
+            if (!result.topIssues || result.topIssues.length === 0) {
+                result.topIssues = evaluateOrgRules(result);
+            }
+            setData(result);
+        } catch (e) {
+            console.error("Failed to load dashboard", e);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    // ... useEffect ...
+    useEffect(() => {
+        loadData();
+    }, [filters]); // Reload when filters change (in real app, pass filters to API)
 
     if (loading && !data) return <div className="page-container" style={{ textAlign: 'center', marginTop: '100px' }}>Loading Command Center...</div>;
     if (!data) return <div>Error loading data</div>;
