@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   db:
@@ -13,10 +13,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U admin -d productivity_x" ]
+      test: [ "CMD-SHELL", "pg_isready -U focus -d focusdb" ]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+    restart: unless-stopped
 
   backend:
     build: ./backend
@@ -24,23 +25,27 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/focusdb
-      - SPRING_DATASOURCE_USERNAME=focus
-      - SPRING_DATASOURCE_PASSWORD=focuspass
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/focusdb
+      SPRING_DATASOURCE_USERNAME: focus
+      SPRING_DATASOURCE_PASSWORD: focuspass
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        # 静态部署：强烈建议用 /api（同源反代，不需要 CORS）
+        VITE_API_URL: /api
     container_name: focus-frontend
     ports:
-      - "5173:5173"
-      - "80:80"
-    environment:
-      - VITE_API_URL=http://backend:8080
+      # 你原本就是 :5173 访问，我帮你保持不变
+      - "5173:80"
     depends_on:
       - backend
+    restart: unless-stopped
 
 volumes:
   postgres_data:
