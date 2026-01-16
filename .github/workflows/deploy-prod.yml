@@ -1,0 +1,34 @@
+name: Deploy (VM Prod)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure docker is available
+        run: |
+          docker version
+          docker compose version
+
+      - name: Deploy (compose)
+        run: |
+          # 用 repo 内的 .env（本机文件），不从 GitHub 传密码
+          docker compose -f docker-compose.prod.yml up -d --build
+          docker compose -f docker-compose.prod.yml ps
+
+      - name: Tail logs (last 100 lines)
+        if: always()
+        run: |
+          docker compose -f docker-compose.prod.yml logs --tail=100 backend
