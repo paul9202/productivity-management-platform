@@ -1,6 +1,8 @@
+version: "3.8"
+
 services:
   db:
-    image: postgres:16
+    image: postgres:15-alpine
     container_name: focus-postgres
     environment:
       POSTGRES_USER: focus
@@ -9,37 +11,41 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pmp_db:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U focus -d focusdb" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     restart: unless-stopped
 
   backend:
-    build:
-      context: ./backend
-    container_name: pmp_backend
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/pmp
-      SPRING_DATASOURCE_USERNAME: pmp
-      SPRING_DATASOURCE_PASSWORD: pmp_password
-      # 你后面要做 CORS，这里先留口
-      CORS_ALLOWED_ORIGINS: http://paul-vmware-virtual-platform:5173
-    depends_on:
-      - db
+    build: ./backend
+    container_name: focus-backend
     ports:
       - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/focusdb
+      SPRING_DATASOURCE_USERNAME: focus
+      SPRING_DATASOURCE_PASSWORD: focuspass
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
   frontend:
     build:
       context: ./frontend
       args:
-        VITE_API_BASE_URL: http://paul-vmware-virtual-platform:8080
-    container_name: pmp_frontend
-    # 重点：对外仍然用 5173（不改你现有访问方式）
+        # 静态部署：强烈建议用 /api（同源反代，不需要 CORS）
+        VITE_API_URL: /api
+    container_name: focus-frontend
     ports:
+      # 你原本就是 :5173 访问，我帮你保持不变
       - "5173:80"
+    depends_on:
+      - backend
     restart: unless-stopped
 
 volumes:
-  pmp_db:
+  postgres_data:
