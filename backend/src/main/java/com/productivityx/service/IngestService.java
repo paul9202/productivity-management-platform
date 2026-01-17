@@ -206,11 +206,9 @@ public class IngestService {
                     evt.setDeviceId(device.getDeviceId());
                     evt.setTs(IngestHelper.parseIso(e.getTimestamp()));
                     evt.setOperation(e.getOperation());
-                    evt.setFileNameHash(IngestHelper.hash(e.getFile_name())); // Metadata only requirement?
-                    // If strict "metadata only" -> hash details. User said "defaults: hash/redact, configurable".
-                    // I will stick to what DTO provides, but maybe hash path if sensitive.
-                    // For now, mapping directly but consider hashing path.
-                    evt.setFilePathHash(IngestHelper.hash(e.getFile_path())); 
+                    // Mapping file path to path_hash per privacy requirement
+                    evt.setPathHash(IngestHelper.hash(e.getFile_path())); 
+                    evt.setFileExt(e.getFile_name().contains(".") ? e.getFile_name().substring(e.getFile_name().lastIndexOf(".") + 1) : ""); 
                     evt.setSizeBytes(e.getSize_bytes());
                     evt.setIsUsb(e.is_usb());
                     evt.setIngestBatchId(batchId);

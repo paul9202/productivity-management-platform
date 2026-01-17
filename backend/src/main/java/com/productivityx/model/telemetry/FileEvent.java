@@ -26,6 +26,9 @@ public class FileEvent {
 
     private String operation;
     
+    @Column(name = "path_hash")
+    private String pathHash;
+    
     @Column(name = "file_ext")
     private String fileExt;
     
