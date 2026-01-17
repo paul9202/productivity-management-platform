@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class IngestController {
 
-    private final TelemetryService telemetryService;
+    private final IngestService ingestService;
 
     @PostMapping("/batch")
     public ResponseEntity<IngestResponse> ingestBatch(
@@ -22,7 +22,20 @@ public class IngestController {
             @RequestBody IngestBatchDTO batch) {
         
         log.debug("Received batch from device {}", deviceId);
-        IngestResponse response = telemetryService.processIngestBatch(deviceId, batch);
-        return ResponseEntity.ok(response);
+        // Add auth check here if not handled by filter (e.g. JWT check)
+        
+        // Validation: Header vs Body
+        // (Assuming deviceId is consistent or checking it)
+        
+        try {
+            IngestResponse response = ingestService.processBatch(deviceId, batch);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid ingest request: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            log.error("Ingest failed", e);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }
