@@ -16,7 +16,7 @@ public interface DailyDeviceSummaryRepository extends JpaRepository<DailyDeviceS
 
     @Modifying
     @Query(value = "INSERT INTO daily_device_summary (id, tenant_id, org_id, device_id, date, active_seconds, idle_seconds, top_apps, top_domains, risk_counters) " +
-            "VALUES (gen_random_uuid(), :tenantId, :orgId, :deviceId, :date, :active, :idle, " +
+            "CAST(COALESCE(NULLIF(:apps, ''), '[]') AS jsonb), " +
             "CAST(COALESCE(NULLIF(:domains, ''), '[]') AS jsonb), " +
             "CAST(COALESCE(NULLIF(:risks, ''), '{}') AS jsonb)) " +
             "ON CONFLICT (tenant_id, org_id, device_id, date) DO UPDATE SET " +
