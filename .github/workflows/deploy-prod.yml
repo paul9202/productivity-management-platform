@@ -24,9 +24,28 @@ jobs:
 
       - name: Deploy (compose)
         run: |
-          # 用 repo 内的 .env（本机文件），不从 GitHub 传密码
-          docker compose -f docker-compose.prod.yml up -d --build
+          set -euxo pipefail
+
+          # 1) 可选：先拉取基础镜像更新（postgres等）
+          docker compose -f docker-compose.prod.yml pull || true
+
+          # 2) 强制重建 backend（最关键：no-cache）
+          docker compose -f docker-compose.prod.yml build --no-cache backend
+
+          # 3) frontend 是否要 no-cache 你自己决定（一般不需要）
+          docker compose -f docker-compose.prod.yml build frontend
+
+          # 4) 强制重建并替换容器
+          docker compose -f docker-compose.prod.yml up -d --force-recreate backend frontend
+
+          # 5) 状态
           docker compose -f docker-compose.prod.yml ps
+
+          # 6) 自检：打印 backend 镜像/容器信息 + jar 时间戳（防止“我以为更新了”）
+          echo "=== backend image ==="
+          docker inspect $(docker ps -qf name=focus-backend) --format '{{.Image}} {{.Created}}' || true
+          echo "=== jar timestamp ==="
+          docker exec -i focus-backend sh -lc "ls -lah /app/app.jar"
 
       - name: Tail logs (last 100 lines)
         if: always()

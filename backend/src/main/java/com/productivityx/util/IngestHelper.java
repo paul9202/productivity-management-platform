@@ -14,14 +14,18 @@ public class IngestHelper {
     }
 
     public static LocalDateTime parseIso(String iso) {
-        if (iso == null) return LocalDateTime.now();
+        if (iso == null || iso.isBlank()) return LocalDateTime.now();
         try {
-            // Flexible parsing could go here, for now assume ISO-8601
-            // If it contains 'Z' or offset, default parser handles it usually
-            return LocalDateTime.parse(iso, DateTimeFormatter.ISO_DATE_TIME);
-        } catch (Exception e) {
-            // Fallback or rethrow
-            return LocalDateTime.now();
+            // Try parsing as OffsetDateTime first (e.g. 2023-01-01T10:00:00Z)
+            return java.time.OffsetDateTime.parse(iso).toLocalDateTime();
+        } catch (Exception e1) {
+            try {
+                // Fallback to LocalDateTime (e.g. 2023-01-01T10:00:00)
+                return LocalDateTime.parse(iso);
+            } catch (Exception e2) {
+                System.err.println("Failed to parse date: " + iso);
+                return LocalDateTime.now();
+            }
         }
     }
 }
