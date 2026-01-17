@@ -12,6 +12,14 @@ public class IngestResponse {
     public void incrementProcessed(String key) {
         processed.put(key, processed.getOrDefault(key, 0) + 1);
     }
+    
+    public void incrementProcessed(String key, int count) {
+        processed.put(key, processed.getOrDefault(key, 0) + count);
+    }
+
+    public void incrementRejected(String key, int count) {
+        rejected.put(key, rejected.getOrDefault(key, 0) + count);
+    }
 
     public void incrementRejected(String key) {
         rejected.put(key, rejected.getOrDefault(key, 0) + 1);

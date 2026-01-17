@@ -104,35 +104,28 @@ public class IngestService {
     }
 
     private void processBuckets(List<IngestBatchDTO.BucketPayload> buckets, Device device, UUID tenantId, UUID orgId, UUID batchId, IngestResponse response) {
-        // Generate IDs hash for idempotency if not provided (Buckets don't have ID in DTO usually, so we rely on unique constraint)
-        // Here we assume client acts correctly or we can't easily dedup without query. 
-        // Strategy: Try saveAll, catch exception? Or query check. 
-        // Given complexity, let's query check.
-        // Complex Constraint: device + start + minutes.
-        
-        List<ActivityBucket> toSave = new ArrayList<>();
-        for (IngestBatchDTO.BucketPayload b : buckets) {
-            LocalDateTime start = IngestHelper.parseIso(b.getBucket_start());
-            if (bucketRepo.existsByDeviceIdAndBucketStartAndBucketMinutes(device.getDeviceId(), start, b.getBucket_minutes())) {
-                response.incrementRejected("buckets");
-            } else {
-                ActivityBucket bucket = new ActivityBucket();
-                bucket.setId(UUID.randomUUID());
-                bucket.setTenantId(tenantId);
-                bucket.setOrgId(orgId);
-                bucket.setDeviceId(device.getDeviceId());
-                bucket.setBucketStart(start);
-                bucket.setBucketMinutes(b.getBucket_minutes());
-                bucket.setActiveSeconds(b.getActive_seconds());
-                bucket.setIdleSeconds(b.getIdle_seconds());
-                bucket.setAvgFocusScore(b.getAvg_focus_score());
-                bucket.setIngestBatchId(batchId);
-                toSave.add(bucket);
-            }
-        }
+        // Optimized: Batch Convert & Insert using ON CONFLICT DO NOTHING
+        List<ActivityBucket> toSave = buckets.stream().map(b -> {
+            ActivityBucket bucket = new ActivityBucket();
+            bucket.setId(UUID.randomUUID());
+            bucket.setTenantId(tenantId);
+            bucket.setOrgId(orgId);
+            bucket.setDeviceId(device.getDeviceId());
+            bucket.setBucketStart(IngestHelper.parseIso(b.getBucket_start()));
+            bucket.setBucketMinutes(b.getBucket_minutes());
+            bucket.setActiveSeconds(b.getActive_seconds());
+            bucket.setIdleSeconds(b.getIdle_seconds());
+            bucket.setAvgFocusScore(b.getAvg_focus_score());
+            bucket.setIngestBatchId(batchId);
+            return bucket;
+        }).collect(Collectors.toList());
+
         if (!toSave.isEmpty()) {
-            bucketRepo.saveAll(toSave);
-            response.getProcessed().put("buckets", response.getProcessed().getOrDefault("buckets", 0) + toSave.size());
+            int inserted = bucketRepo.saveAllIgnoreConflict(toSave);
+            int duplicate = toSave.size() - inserted;
+            
+            if (inserted > 0) response.incrementProcessed("buckets", inserted);
+            if (duplicate > 0) response.incrementRejected("buckets_duplicate", duplicate); // Custom key for distinction
         }
     }
 

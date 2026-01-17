@@ -99,9 +99,10 @@ class IngestServiceTest {
     }
 
     @Test
-    void processBatch_ShouldUpdateAggregations() {
+    void processBatch_ShouldProcessBucketsAndCallBatchInsert() {
         // Arrange
         when(deviceRepository.findById(DEVICE_ID)).thenReturn(Optional.of(device));
+        when(bucketRepo.saveAllIgnoreConflict(any())).thenReturn(1);
         
         IngestBatchDTO batch = new IngestBatchDTO();
         IngestBatchDTO.BucketPayload bucket = new IngestBatchDTO.BucketPayload();
@@ -115,14 +116,7 @@ class IngestServiceTest {
         IngestResponse response = ingestService.processBatch(DEVICE_ID, batch);
 
         // Assert
-        verify(dailySummaryRepo, times(1)).upsertStats(
-            eq(device.getTenantId()), 
-            eq(device.getOrgId()), 
-            eq(DEVICE_ID), 
-            eq(LocalDate.parse("2023-01-01")), 
-            eq(300), 
-            eq(0), 
-            anyString(), anyString(), anyString()
-        );
+        verify(bucketRepo, times(1)).saveAllIgnoreConflict(any());
+        assertEquals(1, response.getProcessed().get("buckets"));
     }
 }
