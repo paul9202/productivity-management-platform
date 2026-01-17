@@ -2,6 +2,7 @@ package com.productivityx.controller;
 
 import com.productivityx.dto.ingest.IngestBatchDTO;
 import com.productivityx.service.IngestResponse;
+import com.productivityx.service.IngestService;
 import com.productivityx.service.TelemetryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
