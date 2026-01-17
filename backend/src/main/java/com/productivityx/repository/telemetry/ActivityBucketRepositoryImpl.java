@@ -22,7 +22,7 @@ public class ActivityBucketRepositoryImpl implements ActivityBucketRepositoryCus
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW()) " +
                 "ON CONFLICT (device_id, bucket_start, bucket_minutes) DO NOTHING";
 
-        int[] result = jdbcTemplate.batchUpdate(sql, buckets, 1000, (ps, bucket) -> {
+        int[][] result = jdbcTemplate.batchUpdate(sql, buckets, 1000, (ps, bucket) -> {
             ps.setObject(1, bucket.getId());
             ps.setObject(2, bucket.getTenantId());
             ps.setObject(3, bucket.getOrgId());
@@ -36,8 +36,10 @@ public class ActivityBucketRepositoryImpl implements ActivityBucketRepositoryCus
         });
         
         int inserted = 0;
-        for (int r : result) {
-            if (r > 0) inserted += r; // Pre-Java 8 stream sum
+        for (int[] batchResult : result) {
+            for (int r : batchResult) {
+                if (r > 0) inserted += r;
+            }
         }
         return inserted;
     }
