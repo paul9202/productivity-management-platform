@@ -7,7 +7,7 @@ import DeviceGroups from './pages/DeviceGroups';
 import Employees from './pages/Employees';
 import Departments from './pages/Departments';
 import Alerts from './pages/Alerts';
-import Policies from './pages/Policies';
+import { PoliciesList, PolicyEditor, Assignments, DevicesPolicyStatus } from './pages/policies';
 import Enrollment from './pages/Enrollment';
 import TelemetryDetails from './pages/TelemetryDetails';
 import Login from './pages/Login';
@@ -44,7 +44,11 @@ const App: React.FC = () => {
                         {/* Admin Only Routes */}
                         <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
                             <Route path="/" element={<Layout />}>
-                                <Route path="policies" element={<Policies />} />
+                                <Route path="policies" element={<PoliciesList />} />
+                                <Route path="policies/:id" element={<PolicyEditor />} />
+                                <Route path="policies/assignments" element={<Assignments />} />
+                                <Route path="policies/:id/assignments" element={<Assignments />} />
+                                <Route path="policies/status" element={<DevicesPolicyStatus />} />
                                 <Route path="enrollment" element={<Enrollment />} />
                                 <Route path="devices/:deviceId/telemetry" element={<TelemetryDetails />} />
                             </Route>
