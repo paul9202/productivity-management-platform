@@ -95,6 +95,93 @@ public class IngestService {
 
     // ... (other methods)
 
+    private void validateBatch(IngestBatchDTO batch) {
+        if (batch == null) throw new IllegalArgumentException("Batch cannot be null");
+    }
+
+    private void processHeartbeat(Device device, IngestBatchDTO.HeartbeatPayload hb, UUID tenantId, UUID orgId, UUID batchId) {
+        device.setLastSeenAt(LocalDateTime.now());
+        device.setStatus("ONLINE");
+        device.setAgentVersion(hb.getAgentVersion());
+        deviceRepository.save(device);
+
+        DeviceHeartbeat dhb = new DeviceHeartbeat();
+        dhb.setId(UUID.randomUUID());
+        dhb.setTenantId(tenantId);
+        dhb.setOrgId(orgId);
+        dhb.setDeviceId(device.getDeviceId());
+        dhb.setTs(LocalDateTime.now());
+        dhb.setStatus(hb.getStatus());
+        dhb.setAgentVersion(hb.getAgentVersion());
+        dhb.setQueueDepth(hb.getQueueDepth());
+        dhb.setUploadErrorCount(hb.getUploadErrorCount());
+        dhb.setIngestBatchId(batchId);
+        heartbeatRepo.save(dhb);
+    }
+
+    private void processBuckets(List<IngestBatchDTO.BucketPayload> buckets, Device device, UUID tenantId, UUID orgId, UUID batchId, IngestResponse response) {
+        List<ActivityBucket> toSave = buckets.stream().map(b -> {
+            ActivityBucket bucket = new ActivityBucket();
+            bucket.setId(UUID.randomUUID());
+            bucket.setTenantId(tenantId);
+            bucket.setOrgId(orgId);
+            bucket.setDeviceId(device.getDeviceId());
+            bucket.setBucketStart(IngestHelper.parseIso(b.getBucket_start()));
+            bucket.setBucketMinutes(b.getBucket_minutes());
+            bucket.setActiveSeconds(b.getActive_seconds());
+            bucket.setIdleSeconds(b.getIdle_seconds());
+            bucket.setAvgFocusScore(b.getAvg_focus_score());
+            bucket.setIngestBatchId(batchId);
+            return bucket;
+        }).collect(Collectors.toList());
+
+        if (!toSave.isEmpty()) {
+            bucketRepo.saveAll(toSave);
+            response.getProcessed().put("buckets", response.getProcessed().getOrDefault("buckets", 0) + toSave.size());
+        }
+    }
+
+    private void processAppEvents(List<IngestBatchDTO.AppPayload> events, Device device, UUID tenantId, UUID orgId, UUID batchId, IngestResponse response) {
+        List<AppUsageEvent> toSave = events.stream().map(e -> {
+            AppUsageEvent evt = new AppUsageEvent();
+            evt.setId(e.getId() != null ? e.getId() : UUID.randomUUID());
+            evt.setTenantId(tenantId);
+            evt.setOrgId(orgId);
+            evt.setDeviceId(device.getDeviceId());
+            evt.setTsStart(IngestHelper.parseIso(e.getTs_start()));
+            evt.setTsEnd(IngestHelper.parseIso(e.getTs_end()));
+            evt.setAppName(e.getApp_name());
+            evt.setProcessName(e.getProcess_name());
+            evt.setIngestBatchId(batchId);
+            return evt;
+        }).collect(Collectors.toList());
+
+        if (!toSave.isEmpty()) {
+            appRepo.saveAll(toSave);
+            response.getProcessed().put("app_events", response.getProcessed().getOrDefault("app_events", 0) + toSave.size());
+        }
+    }
+
+    private void processWebEvents(List<IngestBatchDTO.WebPayload> events, Device device, UUID tenantId, UUID orgId, UUID batchId, IngestResponse response) {
+        List<WebUsageEvent> toSave = events.stream().map(e -> {
+            WebUsageEvent evt = new WebUsageEvent();
+            evt.setId(e.getId() != null ? e.getId() : UUID.randomUUID());
+            evt.setTenantId(tenantId);
+            evt.setOrgId(orgId);
+            evt.setDeviceId(device.getDeviceId());
+            evt.setTsStart(IngestHelper.parseIso(e.getTs_start()));
+            evt.setTsEnd(IngestHelper.parseIso(e.getTs_end()));
+            evt.setDomain(e.getDomain());
+            evt.setIngestBatchId(batchId);
+            return evt;
+        }).collect(Collectors.toList());
+
+        if (!toSave.isEmpty()) {
+            webRepo.saveAll(toSave);
+            response.getProcessed().put("web_events", response.getProcessed().getOrDefault("web_events", 0) + toSave.size());
+        }
+    }
+
     private void processFileEvents(List<IngestBatchDTO.FilePayload> events, Device device, UUID tenantId, UUID orgId, UUID batchId, IngestResponse response) {
         Set<UUID> ids = events.stream().map(IngestBatchDTO.FilePayload::getId).collect(Collectors.toSet());
         Set<UUID> existing = new HashSet<>(fileRepo.findAllById(ids).stream().map(FileEvent::getId).toList());
