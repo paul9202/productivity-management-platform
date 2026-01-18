@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useApi } from '../api';
 import { useNavigate } from 'react-router-dom';
+import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '../components/ui';
 
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '../components/common/LanguageSwitcher';
@@ -33,52 +34,64 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-body)' }}>
-            <div style={{ position: 'absolute', top: 20, right: 20 }}>
+        <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+            <div className="absolute top-4 right-4">
                 <LanguageSwitcher />
             </div>
-            <div className="card" style={{ width: 400, padding: 40 }}>
-                <div style={{ textAlign: 'center', marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+
+            <Card className="w-full max-w-md shadow-lg border-0 sm:border">
+                <CardHeader className="space-y-4 flex flex-col items-center justify-center pt-10">
                     <Logo size={48} showText={true} />
-                    <div style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>{t('pages.login.title')}</div>
-                </div>
+                    <CardTitle className="text-xl font-medium text-slate-600 dark:text-slate-400">
+                        {t('pages.login.title')}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="p-8">
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                {t('pages.login.email_label')}
+                            </label>
+                            <Input
+                                type="text"
+                                value={username}
+                                onChange={e => setUsername(e.target.value)}
+                                placeholder="admin"
+                                required
+                                className="h-11"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                {t('pages.login.password_label')}
+                            </label>
+                            <Input
+                                type="password"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                placeholder="password"
+                                required
+                                className="h-11"
+                            />
+                        </div>
 
-                <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: 8, fontSize: '0.875rem', fontWeight: 500 }}>{t('pages.login.email_label')}</label>
-                        <input
-                            type="text"
-                            className="input-field"
-                            value={username}
-                            onChange={e => setUsername(e.target.value)}
-                            placeholder="admin"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: 8, fontSize: '0.875rem', fontWeight: 500 }}>{t('pages.login.password_label')}</label>
-                        <input
-                            type="password"
-                            className="input-field"
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            placeholder="password"
-                            required
-                        />
-                    </div>
+                        {error && (
+                            <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md border border-red-200 dark:bg-red-900/20 dark:border-red-900">
+                                {error}
+                            </div>
+                        )}
 
-                    {error && <div style={{ color: 'var(--danger)', fontSize: '0.875rem', textAlign: 'center' }}>{error}</div>}
+                        <Button type="submit" className="w-full h-11 text-base" disabled={loading}>
+                            {loading ? '...' : t('pages.login.submit')}
+                        </Button>
 
-                    <button type="submit" className="btn-primary" disabled={loading} style={{ width: '100%', justifyContent: 'center' }}>
-                        {loading ? '...' : t('pages.login.submit')}
-                    </button>
-
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: 16 }}>
-                        Demo Credentials:<br />
-                        User: <b>admin</b> | Pass: <b>password</b>
-                    </div>
-                </form>
-            </div>
+                        <div className="text-xs text-center text-slate-500 mt-4 leading-relaxed">
+                            Demo Credentials:<br />
+                            User: <span className="font-mono font-medium">admin</span> | Pass: <span className="font-mono font-medium">password</span>
+                        </div>
+                    </form>
+                </CardContent>
+            </Card>
         </div>
     );
 };
