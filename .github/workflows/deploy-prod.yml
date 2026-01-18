@@ -50,4 +50,6 @@ jobs:
       - name: Tail logs (last 100 lines)
         if: always()
         run: |
-          docker compose -f docker-compose.prod.yml logs --tail=100 backend
+          docker compose -f docker-compose.prod.yml logs --tail=200 --timestamps backend
+          docker compose -f docker-compose.prod.yml logs --tail=200 --timestamps frontend
+          docker compose -f docker-compose.prod.yml logs --tail=200 --timestamps db

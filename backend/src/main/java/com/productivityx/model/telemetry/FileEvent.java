@@ -24,6 +24,9 @@ public class FileEvent {
     @Column(name = "ts", nullable = false)
     private LocalDateTime ts;
 
+    @Column(name = "ts_ms")
+    private Long tsMs;
+
     private String operation;
     
     @Column(name = "path_hash")
@@ -37,6 +40,12 @@ public class FileEvent {
     
     @Column(name = "is_usb")
     private Boolean isUsb;
+
+    @Column(name = "is_external")
+    private Boolean isExternal;
+
+    @Column(name = "dest_path_hash")
+    private String destPathHash;
 
     @Column(name = "ingest_batch_id")
     private UUID ingestBatchId;

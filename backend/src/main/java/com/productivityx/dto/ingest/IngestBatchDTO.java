@@ -13,6 +13,17 @@ public class IngestBatchDTO {
     private List<AppPayload> app_events;
     private List<WebPayload> web_events;
     private List<FilePayload> file_events;
+    private List<UsbPayload> usb_events;
+
+    @Data
+    public static class UsbPayload {
+        private String action; // INSERT, REMOVE
+        private long ts_ms;
+        private String drive_letter;
+        private String vendor_id;
+        private String product_id;
+        private String volume_serial;
+    }
 
     @Data
     public static class HeartbeatPayload {
@@ -57,5 +68,7 @@ public class IngestBatchDTO {
         private String file_name;
         private long size_bytes;
         private boolean is_usb;
+        private String dest_path;
+        private boolean is_external;
     }
 }
